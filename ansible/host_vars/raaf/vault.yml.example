@@ -1,0 +1,6 @@
+---
+ansible_ssh_pass: !vault |
+          # encrypted SSH password
+
+ansible_become_password: !vault |
+          # encrypted sudo password

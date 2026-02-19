@@ -1,0 +1,28 @@
+---
+
+- name: Configure NFS mounts
+  tags: nfs
+  vars:
+    nfs_mounts:
+      - src: "cubi:/data/public"
+        mount_point: "/mnt/homeserver-public"
+        opts: "defaults,_netdev"
+
+  block:
+    - name: Create NFS mount point directories
+      ansible.builtin.file:
+        path: "{{ item.mount_point }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      loop: "{{ nfs_mounts }}"
+
+    - name: Mount NFS filesystems
+      ansible.posix.mount:
+        path: "{{ item.mount_point }}"
+        src: "{{ item.src }}"
+        fstype: nfs
+        opts: "{{ item.opts }}"
+        state: mounted
+      loop: "{{ nfs_mounts }}"

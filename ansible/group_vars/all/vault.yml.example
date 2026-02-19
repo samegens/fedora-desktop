@@ -1,0 +1,14 @@
+---
+# Copy this file to vault.yml (via fedora-desktop-secrets) and fill in real values,
+# then encrypt with: ansible-vault encrypt vault.yml
+ansible_become_password: !vault |
+          # encrypted sudo password for the main user
+
+kate_password: !vault |
+          # encrypted password for the kate user
+
+redhat_developer_user: !vault |
+          # encrypted Red Hat developer account username
+
+redhat_developer_password: !vault |
+          # encrypted Red Hat developer account password

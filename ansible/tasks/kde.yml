@@ -1,0 +1,75 @@
+---
+- name: Configure KDE Plasma
+  when: use_kde
+  tags: kde
+  block:
+    - name: Disable shortcut Ctrl-F3 (needed for vscode)
+      ansible.builtin.lineinfile:
+        path: /home/{{ username }}/.config/kglobalshortcutsrc
+        regexp: '^Switch to Desktop 3=.*'
+        line: 'Switch to Desktop 3=none,Ctrl+F3,Switch to Desktop 3'
+        state: present
+
+    - name: Get touchpad device name
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+          grep -A 5 "Touchpad" /proc/bus/input/devices | grep "Name=" | sed 's/.*"\(.*\)".*/\1/'
+        executable: /bin/bash
+      register: shell_result
+      changed_when: false
+      check_mode: false
+
+    - name: Display touch pad device name
+      ansible.builtin.debug:
+        var: shell_result
+
+    - name: Change touchpad settings
+      community.general.ini_file:
+        path: "/home/{{ username }}/.config/touchpadxlibinputrc"
+        section: "{{ shell_result.stdout }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        ignore_spaces: true
+        mode: '0644'
+        owner: "{{ username }}"
+        group: "{{ username }}"
+      loop:
+        - option: naturalScroll
+          value: "true"
+          description: Use natural scrolling (backwards scrolls down)
+        - option: tapDragLock
+          value: "true"
+          description: Dragging continues after shortly lifting fingers
+        - option: tapToClick
+          value: "true"
+          description: Tap performs click
+      loop_control:
+        label: "{{ item.description }}"
+
+    - name: Change some Plasma settings
+      community.general.ini_file:
+        path: /home/{{ username }}/.config/plasma-org.kde.plasma.desktop-appletsrc
+        section: "Containments][2][Applets][5][Configuration][General"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        ignore_spaces: true
+        create: false
+      loop:
+        - option: groupingStrategy
+          value: 0
+          description: Don't group icons
+        - option: highlightWindows
+          value: "false"
+          description: Don't highlight application when hovering over icon
+      loop_control:
+        label: "{{ item.description }}"
+
+    - name: Set task switcher to Thumbnail Grid style
+      community.general.ini_file:
+        path: "/home/{{ username }}/.config/kwinrc"
+        section: TabBox
+        option: LayoutName
+        value: thumbnail_grid
+        ignore_spaces: true
+        create: false

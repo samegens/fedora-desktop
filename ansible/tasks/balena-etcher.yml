@@ -1,0 +1,6 @@
+---
+
+- name: Install balenaEtcher
+  tags: balena-etcher
+  ansible.builtin.apt:
+    deb: "https://github.com/balena-io/etcher/releases/download/v{{ balena_etcher_version }}/balena-etcher_{{ balena_etcher_version }}_amd64.deb"

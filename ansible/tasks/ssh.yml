@@ -1,0 +1,147 @@
+---
+
+- name: Configure SSH
+  tags: ssh
+  vars:
+    user_ssh_keys:
+      - cubi
+      - fitpc
+      - fitlet
+      - fitlet-tst
+      - fitlet-acc
+      - liteserver
+      - liteserver-tst
+      - github_samegens
+      - github_blauwe-lucht
+      - gitlab
+      - github_adopteerregenwoud
+
+  block:
+    - name: Create .ssh directory for user
+      ansible.builtin.file:
+        path: /home/{{ username }}/.ssh
+        state: directory
+        group: "{{ username }}"
+        owner: "{{ username }}"
+        mode: "0700"
+
+    - name: Install public keys for user
+      ansible.builtin.copy:
+        src: "{{ item }}/ssh/{{ item }}.pub"
+        dest: "/home/{{ username }}/.ssh/{{ item }}.pub"
+        group: "{{ username }}"
+        owner: "{{ username }}"
+        mode: "0600"
+      loop: "{{ user_ssh_keys }}"
+
+    - name: Install private keys for user
+      ansible.builtin.copy:
+        src: "{{ item }}/ssh/{{ item }}"
+        dest: "/home/{{ username }}/.ssh/{{ item }}"
+        group: "{{ username }}"
+        owner: "{{ username }}"
+        mode: "0600"
+      loop: "{{ user_ssh_keys }}"
+      no_log: true
+
+    - name: Create symlink for homeserver private key (uses cubi key)
+      ansible.builtin.file:
+        src: "/home/{{ username }}/.ssh/cubi"
+        dest: "/home/{{ username }}/.ssh/homeserver"
+        state: link
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: Create symlink for homeserver public key (uses cubi key)
+      ansible.builtin.file:
+        src: "/home/{{ username }}/.ssh/cubi.pub"
+        dest: "/home/{{ username }}/.ssh/homeserver.pub"
+        state: link
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: Create .ssh directory for root
+      ansible.builtin.file:
+        path: /root/.ssh
+        state: directory
+        group: "root"
+        owner: "root"
+        mode: "0700"
+
+    - name: Install private keys for root
+      ansible.builtin.copy:
+        src: "{{ item }}/ssh/{{ item }}"
+        dest: "/root/.ssh/{{ item }}"
+        group: "root"
+        owner: "root"
+        mode: "0700"
+      loop:
+        - fitlet
+        - cubi
+        - fitlet-tst
+        - fitlet-acc
+        - liteserver
+        - liteserver-tst
+      loop_control:
+        label: "{{ item }}"
+      no_log: true
+
+    - name: Add entries to .ssh/config
+      ansible.builtin.copy:
+        dest: /home/{{ username }}/.ssh/config
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0600"
+        content: |
+          Host fitlet
+              IdentityFile ~/.ssh/fitlet
+          Host fitpc
+              IdentityFile ~/.ssh/fitpc
+          Host fitpc-tailscale
+              IdentityFile ~/.ssh/fitpc
+          Host liteserver
+              IdentityFile ~/.ssh/liteserver
+          Host cubi
+              IdentityFile ~/.ssh/cubi
+          Host homeserver
+              IdentityFile ~/.ssh/homeserver
+
+          # GitHub Account samegens
+          Host github.com
+              HostName github.com
+              User git
+              IdentityFile ~/.ssh/github_samegens
+
+          # Bitbucket Account ongoonku
+          Host bitbucket.org
+              HostName bitbucket.org
+              User git
+              IdentityFile ~/.ssh/github_samegens
+
+          # GitHub Account blauwe-lucht
+          Host github.com-blauwe-lucht
+              HostName github.com
+              User git
+              IdentityFile ~/.ssh/github_blauwe-lucht
+
+          Host gitlab.com
+              HostName gitlab.com
+              User git
+              IdentityFile ~/.ssh/gitlab
+
+          Host github_adopteerregenwoud
+              HostName github.com
+              User git
+              IdentityFile ~/.ssh/github_adopteerregenwoud
+
+          # Entry for new machine that needs to be configured using the Ubuntu desktop Ansible configuration.
+          Host new-machine
+              HostName 192.168.88.181
+              PreferredAuthentications password
+              PubkeyAuthentication no
+
+    - name: Ensure ssh service is started and enabled
+      ansible.builtin.service:
+        name: ssh
+        state: started
+        enabled: true

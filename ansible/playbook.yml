@@ -1,0 +1,503 @@
+---
+- name: Configure Ubuntu desktop
+  hosts: all
+  vars:
+    install_v: false
+    use_gnome: false
+    use_kde: true
+    venv_python: /home/{{ username }}/python3-venv/ansible-latest/bin/python3
+    ansible_python_interpreter: /usr/bin/python3
+
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      tags: always
+
+    - name: Check if venv Python exists
+      ansible.builtin.stat:
+        path: "{{ venv_python }}"
+      register: venv_python_stat
+      tags: always
+
+    - name: Set Python interpreter based on venv availability
+      ansible.builtin.set_fact:
+        ansible_python_interpreter: "{{ venv_python }}"
+      when: venv_python_stat.stat.exists
+      tags: always
+
+    - name: Create keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+      tags: always
+
+  roles:
+    - role: geerlingguy.docker
+      vars:
+        docker_users:
+          - "{{ username }}"
+      tags: docker
+    - geerlingguy.pip
+    - geerlingguy.ansible
+    - role: darkwizard242.azurecli
+      tags: azure
+
+  tasks:
+    - name: Set locale
+      ansible.builtin.copy:
+        content: |
+          LANG=en_US.UTF-8
+          LC_NUMERIC=en_US.UTF-8
+          LC_TIME=en_US.UTF-8
+          LC_MONETARY=en_US.UTF-8
+          LC_PAPER=en_US.UTF-8
+          LC_NAME=en_US.UTF-8
+          LC_ADDRESS=en_US.UTF-8
+          LC_TELEPHONE=en_US.UTF-8
+          LC_MEASUREMENT=en_US.UTF-8
+          LC_IDENTIFICATION=en_US.UTF-8
+        dest: /etc/default/locale
+        mode: "0644"
+
+    - name: Create Ansible log directory
+      ansible.builtin.file:
+        path: /var/log/ansible
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0755"
+      tags: dirs
+
+    - name: Create user directories
+      ansible.builtin.file:
+        path: /home/{{ username }}/{{ item.path }}
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "{{ item.mode | default('0775') }}"
+      loop:
+        - path: .config
+          mode: "0700"
+        - path: .config/autostart
+        - path: apps
+        - path: .local
+        - path: .local/share
+        - path: .local/share/applications
+        - path: .local/share/icons
+      tags: dirs
+
+    - name: Install Python packages via apt
+      ansible.builtin.apt:
+        name:
+          - python3-psutil   # needed for dconf
+          - python3-docker
+          - python3-debian   # needed for deb822_repository
+        state: present
+
+    - name: Create global vimrc
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/samegens/dotfiles/master/.vimrc
+        dest: /etc/vim/vimrc.local
+        mode: '0644'
+
+    - name: Install and configure Git
+      ansible.builtin.import_tasks: tasks/git.yml
+
+    - name: Install needed apt packages
+      ansible.builtin.apt:
+        name: "{{ apt_packages }}"
+        state: present
+      tags: apt
+
+    - name: Install needed flatpaks
+      community.general.flatpak:
+        name: "{{ flatpaks }}"
+        state: present
+      tags: flatpak
+
+    - name: Configure Obsidian
+      ansible.builtin.import_tasks: tasks/obsidian.yml
+      tags: obsidian
+
+    - name: Configure Darktable
+      ansible.builtin.import_tasks: tasks/darktable.yml
+      tags: darktable
+
+    - name: Install Workrave
+      ansible.builtin.import_tasks: tasks/workrave.yml
+      tags: workrave
+
+    - name: Prefer IPv4 over IPv6
+      ansible.builtin.lineinfile:
+        path: /etc/gai.conf
+        regexp: "^#?precedence ::ffff:0:0/96"
+        line: "precedence ::ffff:0:0/96  100"
+        state: present
+      tags: network
+
+    - name: Make sure Dropbox can monitor all files and node works properly (1)
+      ansible.builtin.lineinfile:
+        path: /etc/sysctl.conf
+        regexp: "^fs\\.inotify\\.max_user_watches="
+        line: fs.inotify.max_user_watches=524288
+        state: present
+      notify: Reload sysctl config
+      tags: sysctl
+
+    - name: Make sure Dropbox can monitor all files and node works properly (2)
+      ansible.builtin.lineinfile:
+        path: /etc/sysctl.conf
+        regexp: "^fs\\.inotify\\.max_user_instances="
+        line: fs.inotify.max_user_instances=512
+        state: present
+      notify: Reload sysctl config
+      tags: sysctl
+
+    - name: Install VirtualBox
+      ansible.builtin.apt:
+        name:
+          - virtualbox
+          - virtualbox-dkms
+          - linux-headers-generic
+        state: present
+      tags: virtualbox
+
+    - name: Create /etc/vbox directory
+      ansible.builtin.file:
+        path: /etc/vbox
+        state: directory
+        mode: '0755'
+      tags: virtualbox
+
+    - name: Extend VirtualBox static IP range
+      ansible.builtin.copy:
+        dest: /etc/vbox/networks.conf
+        content: "* 192.168.0.0/16"
+        mode: '0644'
+      tags: virtualbox
+
+    - name: Install Vagrant
+      ansible.builtin.include_tasks: tasks/vagrant.yml
+      tags: vagrant
+
+    - name: Install InSpec
+      ansible.builtin.import_tasks:
+        file: tasks/inspec.yml
+
+    - name: Configure SSH
+      ansible.builtin.import_tasks:
+        file: tasks/ssh.yml
+
+    - name: Configure SSHFS mounts
+      ansible.builtin.import_tasks:
+        file: tasks/sshfs-mounts.yml
+
+    - name: Configure NFS mounts
+      ansible.builtin.import_tasks:
+        file: tasks/nfs-mounts.yml
+
+    - name: Set hosts entries
+      ansible.builtin.lineinfile:
+        dest: /etc/hosts
+        line: "{{ item }}"
+      with_items:
+        - '192.168.34.10  thuis-tst.blauwe-lucht.nl'
+        - '192.168.34.10  samtris-tst.blauwe-lucht.nl'
+        - '192.168.34.10  oogdesmeesters-tst.blauwe-lucht.nl'
+        - '192.168.34.10  fitlet-tst'
+        - '192.168.34.10  walangtext-tst.blauwe-lucht.nl'
+        - '192.168.34.10  miro-card-shuffle-dev-tst.blauwe-lucht.nl'
+        - '192.168.34.20  walangtext-tst.blauwelucht.nl'
+        - '192.168.34.20  samtris-tst.blauwelucht.nl'
+        - '192.168.34.20  oogdesmeesters-tst.blauwelucht.nl'
+        - '192.168.34.20  liteserver-tst'
+        - '5.2.74.226     liteserver'
+        - '20.229.92.206  fitlet-acc'
+        - '142.250.179.174 youtube.com'
+        - '142.251.209.238 www.youtube.com'
+        - '142.251.39.142  youtu.be'
+      tags: hosts
+
+    - name: Remove obsolete hosts entries
+      ansible.builtin.lineinfile:
+        dest: /etc/hosts
+        line: "{{ item }}"
+        state: absent
+      with_items:
+        - '{{ fitlet_ip }}   fitlet'
+        - '192.168.2.71   homedisplaypi'
+        - '192.168.2.70   meterkastpi'
+        - '{{ fitpc_ip }}   pihole.local'
+        - '{{ fitpc_ip }}   fitpc'
+        - '192.168.17.32  fitpc-tst'
+        - '142.250.185.206 youtube.com'
+        - '142.250.185.206 www.youtube.com'
+        - '142.250.179.174 youtu.be'
+      tags: hosts
+
+    - name: Configure Visual Studio Code
+      ansible.builtin.include_tasks: tasks/vscode.yml
+      tags: vscode
+
+    - name: Configure Python virtual env
+      ansible.builtin.include_tasks: tasks/python-venv.yml
+      tags: python-venv
+
+    - name: Change keymap to make ScrLk the compose key instead of Pause
+      ansible.builtin.copy:
+        dest: /etc/xdg/autostart/xmodmap.desktop
+        content: |
+          [Desktop Entry]
+          Type=Application
+          Name=xmodmap
+          Exec=xmodmap -e "keycode 78 = Multi_key"
+          OnlyShowIn=GNOME;
+          AutostartCondition=GSettings org.gnome.desktop.background show-desktop-icons
+        mode: "0644"
+      tags: xmodmap
+
+    - name: Configure Gnome
+      ansible.builtin.import_tasks:
+        file: tasks/gnome.yml
+
+    - name: Configure KDE Plasma
+      ansible.builtin.import_tasks:
+        file: tasks/kde.yml
+
+    - name: Create .inputrc
+      ansible.builtin.copy:
+        dest: /home/{{ username }}/.inputrc
+        content: |
+          set completion-ignore-case On
+          # ctrl-backspace removes previous word:
+          "\C-h": backward-kill-word
+          # ctrl-delete removes current word:
+          "\e[3;5~": kill-word
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0644"
+      tags: rc
+
+    - name: Configure .bashrc
+      ansible.builtin.import_tasks:
+        file: tasks/bashrc.yml
+
+    - name: Install Chrome (needed for TagUI)
+      ansible.builtin.apt:
+        deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      tags:
+        - chrome
+        - tagui
+
+    - name: Create Chrome directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0700"
+      loop:
+        - /home/{{ username }}/google-chrome
+        - /home/{{ username }}/google-chrome/Default
+      tags: chrome
+
+    - name: Copy Chrome bookmarks
+      ansible.builtin.copy:
+        src: ~/.config/google-chrome/Default/Bookmarks
+        dest: /home/{{ username }}/.config/google-chrome/Default/Bookmarks
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0600"
+      when: copy_chrome_bookmarks is defined and copy_chrome_bookmarks
+      tags: chrome
+
+    - name: Install TagUI
+      ansible.builtin.import_tasks:
+        file: tasks/tagui.yml
+
+    - name: Allow access to webcams
+      ansible.builtin.user:
+        name: "{{ username }}"
+        groups: video
+        append: true
+      tags: webcam
+
+    - name: Allow access to USB ports
+      ansible.builtin.user:
+        name: "{{ username }}"
+        groups: dialout
+        append: true
+      tags: dialout
+
+    - name: Install terraform
+      ansible.builtin.unarchive:
+        src: "{{ terraform_pkg_url }}"
+        dest: "{{ terraform_install_path }}"
+        remote_src: true
+      tags: terraform
+
+    - name: Create ~/.terraform
+      ansible.builtin.file:
+        path: /home/{{ username }}/.terraform
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0700"
+        state: directory
+      tags: terraform
+
+    - name: Copy Terraform Azure config
+      ansible.builtin.copy:
+        src: terraform/secret-vars.tfvars.encrypted
+        dest: /home/{{ username }}/.terraform/secret-vars.tfvars
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0600"
+      tags: terraform
+
+    - name: Install Signal
+      ansible.builtin.include_tasks: tasks/signal.yml
+      tags: signal
+
+    - name: Install P4Merge
+      ansible.builtin.include_tasks: tasks/p4merge.yml
+      tags: p4merge
+
+    - name: Install iperf
+      ansible.builtin.apt:
+        name: iperf
+      tags: iperf
+
+    - name: Configure Firefox
+      ansible.builtin.import_tasks:
+        file: tasks/firefox.yml
+
+    - name: Install V
+      ansible.builtin.import_tasks:
+        file: tasks/v.yml
+
+    - name: Install Brother DCP-1610W printer
+      ansible.builtin.import_tasks:
+        file: tasks/printer.yml
+
+    - name: Fix touchpad
+      ansible.builtin.apt:
+        name: xserver-xorg-input-synaptics
+      tags: touchpad
+
+    - name: Copy .ssh
+      ansible.builtin.copy:
+        src: ~/.ssh/
+        dest: /home/{{ username }}/.ssh
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0600"
+      when: copy_dot_ssh
+      tags: ssh
+
+    - name: Install Double Commander
+      ansible.builtin.import_tasks: tasks/doublecmd.yml
+      tags: doublecmd
+
+    - name: Install Dropbox
+      ansible.builtin.apt:
+        name: nautilus-dropbox
+      tags: dropbox
+
+    - name: Install Node.js
+      ansible.builtin.import_tasks:
+        file: tasks/nodejs.yml
+
+    - name: Install FreeCAD
+      ansible.builtin.import_tasks:
+        file: tasks/freecad.yml
+
+    - name: Install PrusaSlicer
+      ansible.builtin.import_tasks:
+        file: tasks/prusa-slicer.yml
+
+    - name: Install Spotify
+      community.general.flatpak:
+        name: com.spotify.Client
+      tags: spotify
+
+    - name: Add VeraCrypt APT PPA
+      ansible.builtin.apt_repository:
+        repo: ppa:unit193/encryption
+      tags: veracrypt
+
+    - name: Install VeraCrypt
+      ansible.builtin.apt:
+        name: veracrypt
+      tags: veracrypt
+
+    - name: Install Betterbird
+      ansible.builtin.import_tasks:
+        file: tasks/betterbird.yml
+
+    - name: Install Microsoft TTFs
+      ansible.builtin.import_tasks:
+        file: tasks/ttf-mscorefonts.yml
+
+    - name: Increase max virtual memory areas for OpenSearch
+      ansible.posix.sysctl:
+        name: vm.max_map_count
+        value: 262144
+        state: present
+        sysctl_set: true  # Ensure the value is applied immediately
+        reload: true      # Reload the sysctl values from configuration
+      tags: vm_max_map_count
+
+    - name: Install draw.io
+      ansible.builtin.import_tasks: tasks/drawio.yml
+
+    - name: Install Starship
+      ansible.builtin.import_tasks: tasks/starship.yml
+
+    - name: Install Claude Code
+      ansible.builtin.import_tasks: tasks/claude-code.yml
+
+    - name: Install Fastfetch
+      ansible.builtin.import_tasks: tasks/fastfetch.yml
+
+    - name: Install Rust and Cargo
+      ansible.builtin.import_tasks: tasks/rust.yml
+
+    - name: Install k3s
+      ansible.builtin.import_tasks: tasks/k3s.yml
+
+    - name: Install gitleaks
+      ansible.builtin.import_tasks: tasks/gitleaks.yml
+
+    - name: Install TruffleHog
+      ansible.builtin.import_tasks: tasks/trufflehog.yml
+
+    - name: Create user Kate
+      ansible.builtin.import_tasks: tasks/user-kate.yml
+
+    - name: Install balenaEtcher
+      ansible.builtin.import_tasks: tasks/balena-etcher.yml
+
+    - name: Configure hibernate
+      ansible.builtin.import_tasks: tasks/hibernate.yml
+
+    - name: Install Tailscale
+      ansible.builtin.import_tasks: tasks/tailscale.yml
+
+  handlers:
+    - name: Reload sysctl config
+      ansible.builtin.command:
+        cmd: sysctl -p
+      changed_when: true
+
+    - name: Restart systemd-resolved
+      ansible.builtin.systemd:
+        name: systemd-resolved.service
+        state: restarted
+
+    - name: Restart systemd-logind
+      ansible.builtin.systemd:
+        name: systemd-logind.service
+        state: restarted

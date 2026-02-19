@@ -1,0 +1,19 @@
+---
+- name: Configure Obsidian
+  tags: obsidian
+  block:
+    - name: Create Obsidian config directory
+      ansible.builtin.file:
+        path: /home/{{ username }}/.var/app/md.obsidian.Obsidian/config/obsidian
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0700"
+
+    - name: Copy Obsidian config
+      ansible.builtin.template:
+        src: obsidian/obsidian.json.j2
+        dest: /home/{{ username }}/.var/app/md.obsidian.Obsidian/config/obsidian/obsidian.json
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0644"

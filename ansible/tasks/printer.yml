@@ -1,0 +1,25 @@
+---
+- name: Install Brother DCP-1610W software
+  tags: printer
+  block:
+    - name: Install Brother DCP-1610W LPR driver
+      ansible.builtin.apt:
+        deb: https://download.brother.com/welcome/dlf101533/dcp1610wlpr-3.0.1-1.i386.deb
+
+    - name: Install Brother DCP-1610W CUPSwrapper driver
+      ansible.builtin.apt:
+        deb: https://download.brother.com/welcome/dlf101533/dcp1610wlpr-3.0.1-1.i386.deb
+
+    - name: Install Brother DCP-1610W scanner driver
+      ansible.builtin.apt:
+        deb: https://download.brother.com/welcome/dlf105200/brscan4-0.4.11-1.amd64.deb
+
+    - name: Install scan key tool
+      ansible.builtin.apt:
+        deb: https://download.brother.com/welcome/dlf006652/brscan-skey-0.3.4-0.amd64.deb
+      # Check if the scan-key-tool detect your scanner device: brscan-skey -l
+      # Usage: brscan-skey
+
+    - name: Enable rootless scanning
+      ansible.builtin.apt:
+        deb: https://download.brother.com/welcome/dlf006654/brother-udev-rule-type1-1.0.2-0.all.deb

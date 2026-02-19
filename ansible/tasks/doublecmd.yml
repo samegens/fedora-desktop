@@ -1,0 +1,133 @@
+---
+- name: Install Double Commander
+  tags: doublecmd
+  block:
+    - name: Check if Double Commander is already installed
+      ansible.builtin.stat:
+        path: /opt/doublecmd/doublecmd
+      register: doublecmd_binary
+
+    - name: Check installed version marker
+      ansible.builtin.stat:
+        path: /opt/doublecmd/.version-{{ doublecmd_version }}
+      register: doublecmd_version_marker
+
+    - name: Install Double Commander
+      when: not doublecmd_binary.stat.exists or not doublecmd_version_marker.stat.exists
+      vars:
+        tarxz_path: /root/doublecmd-{{ doublecmd_version }}.tar.xz
+      block:
+        - name: Ensure /opt directory exists
+          ansible.builtin.file:
+            path: /opt
+            state: directory
+            mode: '0755'
+
+        - name: Download Double Commander tarball
+          ansible.builtin.get_url:
+            url: "https://github.com/doublecmd/doublecmd/releases/download/v{{ doublecmd_version }}/doublecmd-{{ doublecmd_version }}.qt.x86_64.tar.xz"
+            dest: "{{ tarxz_path }}"
+            owner: root
+            group: root
+            mode: '0644'
+          check_mode: false
+
+        - name: Remove old Double Commander installation if exists
+          ansible.builtin.file:
+            path: /opt/doublecmd
+            state: absent
+          when: doublecmd_binary.stat.exists
+
+        - name: Extract Double Commander
+          ansible.builtin.unarchive:
+            src: "{{ tarxz_path }}"
+            dest: /opt
+            remote_src: true
+            mode: '0755'
+            owner: root
+            group: root
+
+        - name: Find old version markers
+          ansible.builtin.find:
+            paths: /opt/doublecmd
+            patterns: '.version-*'
+            hidden: true
+          register: old_markers
+
+        - name: Remove old version markers
+          ansible.builtin.file:
+            path: "{{ item.path }}"
+            state: absent
+          loop: "{{ old_markers.files }}"
+          when: item.path != '/opt/doublecmd/.version-' + doublecmd_version
+
+        - name: Create version marker file
+          ansible.builtin.copy:
+            content: ""
+            dest: /opt/doublecmd/.version-{{ doublecmd_version }}
+            mode: '0644'
+            owner: root
+            group: root
+            force: false
+
+        - name: Clean up downloaded tarball
+          ansible.builtin.file:
+            path: /tmp/doublecmd-{{ doublecmd_version }}.tar.xz
+            state: absent
+
+    - name: Create symbolic link for doublecmd binary
+      ansible.builtin.file:
+        src: /opt/doublecmd/doublecmd
+        dest: /usr/local/bin/doublecmd
+        state: link
+
+    - name: Remove doublecmd.inf to use user config directory
+      ansible.builtin.file:
+        path: /opt/doublecmd/settings/doublecmd.inf
+        state: absent
+
+    - name: Download Double Commander icon
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/doublecmd/doublecmd/refs/heads/master/pixmaps/mainicon/dc_256.svg
+        dest: /home/{{ username }}/.local/share/icons/doublecmd.svg
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0644"
+
+    - name: Create desktop entry for Double Commander
+      ansible.builtin.copy:
+        dest: /home/{{ username }}/.local/share/applications/doublecmd.desktop
+        content: |
+          [Desktop Entry]
+          Type=Application
+          Name=Double Commander
+          Comment=Dual-pane file manager
+          Exec=/usr/local/bin/doublecmd %f
+          Icon=/home/{{ username }}/.local/share/icons/doublecmd.svg
+          Terminal=false
+          Categories=Utility;FileManager;
+          MimeType=inode/directory;
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0644"
+
+    - name: Create ~/.config/doublecmd
+      ansible.builtin.file:
+        path: /home/{{ username }}/.config/doublecmd
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0775"
+
+    - name: Copy Double Commander config
+      ansible.builtin.template:
+        src: doublecmd/{{ item }}
+        dest: /home/{{ username }}/.config/doublecmd/{{ item }}
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0664"
+      loop:
+        - doublecmd.xml
+        - multiarc.ini
+        - session.ini
+        - shortcuts.scf

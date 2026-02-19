@@ -1,0 +1,16 @@
+# Ansible files
+.lock
+.ansible
+
+# Secrets - managed via fedora-desktop-secrets + symlinks (see setup-repo.sh)
+ansible/group_vars/*/vault.yml
+ansible/host_vars/*/vault.yml
+ansible/files/*/ssh/*
+!ansible/files/*/ssh/*.pub
+ansible/files/terraform/secret-vars.tfvars.encrypted
+
+# Vim swap files
+*.swp
+
+# Python files
+__pycache__

@@ -1,0 +1,37 @@
+---
+- name: Install Rust and Cargo
+  block:
+    - name: Check if rustup is already installed
+      ansible.builtin.stat:
+        path: /home/{{ username }}/.cargo/bin/rustup
+      register: rustup_stat
+
+    - name: Download rustup installer
+      ansible.builtin.get_url:
+        url: https://sh.rustup.rs
+        dest: /tmp/rustup-init.sh
+        mode: '0755'
+      when: not rustup_stat.stat.exists
+
+    - name: Install rustup
+      ansible.builtin.command:
+        cmd: /tmp/rustup-init.sh -y --default-toolchain stable
+      become: true
+      become_user: "{{ username }}"
+      when: not rustup_stat.stat.exists
+      changed_when: true
+
+    - name: Update rustup and Rust toolchain
+      ansible.builtin.command:
+        cmd: /home/{{ username }}/.cargo/bin/rustup update
+      become: true
+      become_user: "{{ username }}"
+      register: rustup_update
+      changed_when: "'updated' in rustup_update.stdout or 'installed' in rustup_update.stdout"
+      when: rustup_stat.stat.exists
+
+    - name: Clean up rustup installer
+      ansible.builtin.file:
+        path: /tmp/rustup-init.sh
+        state: absent
+      when: not rustup_stat.stat.exists

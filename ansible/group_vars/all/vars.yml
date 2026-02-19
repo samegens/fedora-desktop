@@ -1,0 +1,78 @@
+---
+ansible_become: true
+ansible_become_method: sudo
+
+username: sebastiaan
+git_user_name: Sebastiaan
+git_user_email: sebastiaan@blauwe-lucht.nl
+
+kate_username: kate
+
+visual_studio_code_mirror: 'https://packages.microsoft.com'
+visual_studio_code_gpgcheck: true
+visual_studio_code_package: code
+visual_studio_code_version: ''
+  # Means latest.
+
+gnome_favorites: >-
+  [
+    'firefox.desktop',
+    'google-chrome.desktop',
+    'chrome-cifhbcnohmdccbgoicgdjpfamggdegmo-Default.desktop',
+    'doublecmd.desktop',
+    'org.gnome.Terminal.desktop',
+    'code.desktop',
+    'keepassx.desktop'
+  ]
+
+starship_version: "v1.23.0"
+
+doublecmd_version: "1.1.30"
+
+balena_etcher_version: "2.1.4"
+
+gitleaks_version: "8.21.2"
+trufflehog_version: "3.87.2"
+
+terraform_version_to_install: "1.4.0"
+terraform_pkg_url: >-
+  {{ 'https://releases.hashicorp.com/terraform/' + terraform_version_to_install +
+     '/terraform_' + terraform_version_to_install + '_' + os_type + '_' + base_arch[ansible_architecture] | default('amd64') + '.zip' }}
+terraform_install_path: /usr/local/bin/
+os_type: linux
+
+fitlet_ip: "192.168.2.67"
+fitpc_ip: "192.168.2.69"
+
+fallback_dns_ip: "9.9.9.9"
+
+apt_packages:
+  - byobu
+  - vim
+  - keepassx
+  - okular            # Okular (pdf reader)
+  - ansible-lint
+  - smbclient
+  - imagemagick
+  - gnome-tweaks
+  - python3-pygame    # needed for home display
+  - python3-influxdb  # needed for home display
+  - openjdk-17-jdk    # needed for TagUI
+  - python-is-python3 # Set Python3 as the default Python
+  - traceroute
+  - jq                # needed to format json
+  - gimp
+  - htop
+  - libfontconfig1-dev # needed for musicxml-analyzer
+  - pkg-config         # needed for musicxml-analyzer
+  - simple-scan        # needed to scan documents
+  - gh                 # needed to create Github repos from the cmdline
+  - sshfs              # needed to easily use files from homeserver
+  - openssh-server     # to use sshfs with this machine
+  - nfs-common         # to be able to mount NFS shares
+
+flatpaks:
+  - md.obsidian.Obsidian
+  - com.slack.Slack
+  - com.spotify.Client
+  - org.darktable.Darktable

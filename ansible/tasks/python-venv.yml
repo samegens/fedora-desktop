@@ -1,0 +1,57 @@
+---
+- name: Configure Python virtual environments
+  tags: python-venv
+  block:
+    - name: Install python3-venv
+      ansible.builtin.apt:
+        name: python3-venv
+        state: present
+
+    - name: Create root dir for Python virtualenvs
+      ansible.builtin.file:
+        path: /home/sebastiaan/python3-venv
+        state: directory
+        mode: "0755"
+        owner: sebastiaan
+        group: sebastiaan
+
+    - name: Create python venv for Ansible
+      ansible.builtin.command:
+        cmd: python3 -m venv ~/python3-venv/ansible-latest
+        creates: "~/python3-venv/ansible-latest/bin/activate"
+      become: true
+      become_user: sebastiaan
+
+    - name: Install dependencies in the virtualenv
+      ansible.builtin.pip:
+        name:
+          - ansible
+          - ansible-lint
+          - librouteros
+          - python-debian     # needed for deb822_repository
+          - detect-secrets
+          - passlib           # needed for password_hash filter
+        virtualenv: ~/python3-venv/ansible-latest
+        virtualenv_python: python3
+      become: true
+      become_user: sebastiaan
+
+    - name: Create python venv for blauwe-lucht-rpa
+      ansible.builtin.command:
+        cmd: python3 -m venv ~/python3-venv/blauwe-lucht-rpa
+        creates: "~/python3-venv/blauwe-lucht-rpa/bin/activate"
+      become: true
+      become_user: sebastiaan
+
+    - name: Install pip packages for blauwe-lucht-rpa
+      ansible.builtin.pip:
+        name:
+          - rpa
+          - gspread
+          - oauth2client
+          - reportlab
+          - pypdf
+        virtualenv: ~/python3-venv/blauwe-lucht-rpa
+        virtualenv_python: python3
+      become: true
+      become_user: sebastiaan

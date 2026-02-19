@@ -1,0 +1,41 @@
+---
+- name: Install TagUI
+  tags: tagui
+  block:
+    - name: Download TagUI
+      ansible.builtin.get_url:
+        url: https://github.com/kelaberetiv/TagUI/releases/download/v6.110.0/TagUI_Linux.zip
+        dest: /root/
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Unzip TagUI download
+      ansible.builtin.unarchive:
+        src: /root/TagUI_Linux.zip
+        remote_src: true
+        dest: /home/{{ username }}/
+        mode: "0755"
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: Create link to tagui executable
+      ansible.builtin.file:
+        src: /home/{{ username }}/tagui/src/tagui
+        dest: /usr/local/bin/tagui
+        mode: "0755"
+        state: link
+
+    - name: Install PHP (required by TagUI)
+      ansible.builtin.apt:
+        name: php
+
+    - name: Install Python package rpa
+      ansible.builtin.pip:
+        name: rpa
+
+    - name: Install packages required by blauwe-lucht-rpa
+      ansible.builtin.pip:
+        name:
+          - gspread
+          - oauth2client

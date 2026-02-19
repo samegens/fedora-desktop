@@ -1,0 +1,29 @@
+---
+
+- name: Install Signal.
+  tags: signal
+  block:
+    - name: Download Signal GPG key.
+      ansible.builtin.uri:
+        url: https://updates.signal.org/desktop/apt/keys.asc
+        return_content: true
+      register: uri_result
+      check_mode: false
+
+    - name: Add Signal GPG key to keyring.
+      ansible.builtin.command: gpg --dearmor -o /etc/apt/keyrings/signal-desktop-keyring.gpg
+      args:
+        stdin: "{{ uri_result.content }}"
+        creates: /etc/apt/keyrings/signal-desktop-keyring.gpg
+
+    - name: Add Signal repository.
+      ansible.builtin.apt_repository:
+        repo: 'deb [signed-by=/etc/apt/keyrings/signal-desktop-keyring.gpg] https://updates.signal.org/desktop/apt xenial main'
+        state: present
+        update_cache: true
+
+    - name: Install Signal Desktop. # noqa: package-latest
+      ansible.builtin.apt:
+        name: signal-desktop
+        state: latest
+        update_cache: true

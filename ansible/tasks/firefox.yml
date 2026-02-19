@@ -1,0 +1,56 @@
+---
+- name: Install and configure Firefox
+  tags: firefox
+  block:
+    - name: Download Mozilla APT repository signing key
+      ansible.builtin.get_url:
+        url: https://packages.mozilla.org/apt/repo-signing-key.gpg
+        dest: /etc/apt/keyrings/packages.mozilla.org.asc
+        mode: '0644'
+        force: false
+
+    - name: Verify Mozilla signing key fingerprint
+      ansible.builtin.command:
+        cmd: gpg --show-keys /etc/apt/keyrings/packages.mozilla.org.asc
+      register: gpg_fingerprint
+      changed_when: false
+      failed_when: "'35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3' not in gpg_fingerprint.stdout"
+
+    - name: Add Mozilla APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main"
+        filename: mozilla
+        state: present
+
+    - name: Set Mozilla repository priority
+      ansible.builtin.copy:
+        dest: /etc/apt/preferences.d/mozilla
+        content: |
+          Package: *
+          Pin: origin packages.mozilla.org
+          Pin-Priority: 1000
+        mode: '0644'
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Retrieve firefox installation properties
+      ansible.builtin.command:
+        cmd: apt-cache policy firefox
+      register: apt_cache_result
+      changed_when: false
+
+    - name: Remove Ubuntu's transitional Firefox snap package if installed
+      ansible.builtin.apt:
+        name: firefox
+        state: absent
+        purge: true
+      when: "apt_cache_result.stdout is search('Installed: 1:1snap1')"
+
+    - name: Install Firefox from Mozilla repository  # noqa: package-latest
+      ansible.builtin.apt:
+        name: firefox
+        state: latest
+        install_recommends: true

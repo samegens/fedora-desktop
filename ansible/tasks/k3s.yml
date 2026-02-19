@@ -1,0 +1,85 @@
+---
+- name: Install k3s
+  tags: k3s
+  block:
+    - name: Check if k3s is already installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/k3s
+      register: k3s_stat
+
+    - name: Download k3s install script
+      ansible.builtin.get_url:
+        url: https://get.k3s.io
+        dest: /tmp/k3s-install.sh
+        mode: '0755'
+      when: not k3s_stat.stat.exists
+
+    - name: Install k3s
+      ansible.builtin.command:
+        cmd: /tmp/k3s-install.sh
+      environment:
+        INSTALL_K3S_SKIP_START: "false"
+        INSTALL_K3S_EXEC: server --write-kubeconfig-mode=0640 --write-kubeconfig-group=adm
+      when: not k3s_stat.stat.exists
+      changed_when: true
+
+    - name: Clean up k3s installer
+      ansible.builtin.file:
+        path: /tmp/k3s-install.sh
+        state: absent
+      when: not k3s_stat.stat.exists
+
+    - name: Ensure k3s service is enabled and started
+      ansible.builtin.systemd:
+        name: k3s
+        enabled: true
+        state: started
+
+    - name: Check if helm is already installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/helm
+      register: helm_stat
+
+    - name: Download Helm v4.0.4
+      ansible.builtin.get_url:
+        url: https://get.helm.sh/helm-v4.0.4-linux-amd64.tar.gz
+        dest: /tmp/helm-v4.0.4-linux-amd64.tar.gz
+        mode: '0644'
+      when: not helm_stat.stat.exists
+
+    - name: Extract Helm archive
+      ansible.builtin.unarchive:
+        src: /tmp/helm-v4.0.4-linux-amd64.tar.gz
+        dest: /tmp
+        remote_src: true
+      when: not helm_stat.stat.exists
+
+    - name: Install Helm binary
+      ansible.builtin.copy:
+        src: /tmp/linux-amd64/helm
+        dest: /usr/local/bin/helm
+        mode: '0755'
+        remote_src: true
+      when: not helm_stat.stat.exists
+
+    - name: Clean up Helm archive
+      ansible.builtin.file:
+        path: /tmp/helm-v4.0.4-linux-amd64.tar.gz
+        state: absent
+      when: not helm_stat.stat.exists
+
+    - name: Clean up extracted Helm directory
+      ansible.builtin.file:
+        path: /tmp/linux-amd64
+        state: absent
+      when: not helm_stat.stat.exists
+
+    - name: Verify Helm installation
+      ansible.builtin.command:
+        cmd: helm version
+      register: helm_version
+      changed_when: false
+
+    - name: Display Helm version
+      ansible.builtin.debug:
+        var: helm_version.stdout

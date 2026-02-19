@@ -1,0 +1,7 @@
+---
+# Make sure new-machine is configured in .ssh/config
+ansible_host: new-machine
+ansible_user: sebastiaan
+ansible_connection: ssh
+
+copy_dot_ssh: true

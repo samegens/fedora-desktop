@@ -1,0 +1,24 @@
+---
+- name: Install p4merge
+  tags: p4merge
+  block:
+
+    - name: Download p4merge tgz
+      ansible.builtin.get_url:
+        url: https://cdist2.perforce.com/perforce/r23.2/bin.linux26x86_64/p4v.tgz
+        dest: /root/p4v.tgz
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Extract p4merge tgz
+      ansible.builtin.unarchive:
+        src: /root/p4v.tgz
+        remote_src: true
+        dest: /opt/
+
+    - name: Link /usr/local/bin/p4merge to downloaded p4merge
+      ansible.builtin.file:
+        src: /opt/p4v-2023.2.2467475/bin/p4merge
+        dest: /usr/local/bin/p4merge
+        state: link

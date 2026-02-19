@@ -1,0 +1,66 @@
+---
+
+- name: Install Vagrant.
+  tags: vagrant
+  block:
+    - name: Create keyrings directory.
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download HashiCorp GPG key.
+      ansible.builtin.uri:
+        url: https://apt.releases.hashicorp.com/gpg
+        return_content: true
+      register: uri_result
+      check_mode: false
+
+    - name: Add HashiCorp GPG key to keyring.
+      ansible.builtin.command: gpg --dearmor -o /etc/apt/keyrings/hashicorp-archive-keyring.gpg
+      args:
+        stdin: "{{ uri_result.content }}"
+        creates: /etc/apt/keyrings/hashicorp-archive-keyring.gpg
+
+    - name: Get Ubuntu codename.
+      ansible.builtin.command: lsb_release -cs
+      register: lsb_release_result
+      changed_when: false
+
+    - name: Add HashiCorp repository.
+      ansible.builtin.apt_repository:
+        repo: 'deb [signed-by=/etc/apt/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ lsb_release_result.stdout }} main'
+        state: present
+        update_cache: true
+
+    - name: Install Vagrant. # noqa: package-latest
+      ansible.builtin.apt:
+        name:
+          - vagrant
+          - hcp
+        state: latest
+
+    - name: Check vagrant plugins.
+      ansible.builtin.command: vagrant plugin list
+      register: vagrant_result
+      changed_when: false
+      become: true
+      become_user: "{{ username }}"
+
+    - name: Install vagrant plugins.
+      ansible.builtin.command: vagrant plugin install {{ item }}
+      become: true
+      become_user: "{{ username }}"
+      changed_when: true
+      when: "item not in vagrant_result.stdout"
+      loop:
+        - vagrant-disksize
+        - vagrant-vmware-desktop
+
+    - name: Add HCP environment variables to .bashrc.
+      ansible.builtin.lineinfile:
+        path: "/home/{{ username }}/.bashrc"
+        line: "{{ item }}"
+      loop:
+        - "export HCP_ORGANIZATION_ID=ef421799-ccdd-475b-a102-8883a23b75d9"
+        - "export HCP_PROJECT_ID=23aba1d0-48a6-4891-aef7-8cf4fb1ce859"

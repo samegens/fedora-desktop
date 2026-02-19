@@ -1,0 +1,71 @@
+---
+- name: Install FreeCAD
+  tags: freecad
+  block:
+    - name: Determine latest version
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/FreeCAD/FreeCAD/releases/latest
+        method: GET
+        return_content: true
+        headers:
+          Accept: application/vnd.github+json
+          X-GitHub-Api-Version: "2022-11-28"
+      register: uri_result
+
+    - name: Set AppImage download URL
+      ansible.builtin.set_fact:
+        appimage_url: >-
+          {{
+            uri_result.json.assets
+            | selectattr('name', 'match', '.*Linux-x86_64.*\.AppImage$')
+            | map(attribute='browser_download_url')
+            | first
+          }}
+
+    - name: Set file name
+      ansible.builtin.set_fact:
+        appimage_filename: "{{ appimage_url | urlsplit('path') | regex_replace('.*/', '') }}"
+        freecad_version: "{{ appimage_url | regex_search('([0-9]+\\.[0-9]+\\.[0-9]+)') }}"
+
+    - name: Show download URL
+      ansible.builtin.debug:
+        msg: Downloading FreeCAD {{ freecad_version }} from {{ appimage_url }}
+
+    - name: Check if file is already downloaded
+      ansible.builtin.stat:
+        path: /home/{{ username }}/apps/{{ appimage_filename }}
+      register: stat_result
+
+    - name: Download FreeCAD
+      ansible.builtin.get_url:
+        url: "{{ appimage_url }}"
+        dest: /home/{{ username }}/apps/
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0755"
+      when: not stat_result.stat.exists
+
+    - name: Download icon
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/FreeCAD/FreeCAD/main/src/Main/icon.ico
+        dest: /home/{{ username }}/.local/share/icons/freecad.icon
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0644"
+
+    - name: Create desktop entry for FreeCAD
+      ansible.builtin.copy:
+        dest: /home/{{ username }}/.local/share/applications/FreeCAD-{{ freecad_version }}.desktop
+        content: |
+          [Desktop Entry]
+          Type=Application
+          Name=FreeCAD {{ freecad_version }}
+          Icon=/home/{{ username }}/.local/share/icons/freecad.icon
+          Exec=/home/{{ username }}/apps/{{ appimage_filename }}
+          Comment=FreeCAD is an open-source parametric 3D modeler
+          Terminal=false
+          Categories=Graphics;3DGraphics;
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0644"
+      when: use_kde

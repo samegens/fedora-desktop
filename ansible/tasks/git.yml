@@ -1,0 +1,40 @@
+---
+- name: Configure git
+  tags: git
+  block:
+    - name: Install git
+      ansible.builtin.apt:
+        name: git
+        state: present
+
+    - name: Set git user name
+      community.general.git_config:
+        name: user.name
+        scope: global
+        value: "{{ git_user_name }}"
+      become: true
+      become_user: "{{ username }}"
+
+    - name: Set git user email
+      community.general.git_config:
+        name: user.email
+        scope: global
+        value: "{{ git_user_email }}"
+      become: true
+      become_user: "{{ username }}"
+
+    - name: Make sure git looks at file permissions
+      community.general.git_config:
+        name: core.fileMode
+        scope: global
+        value: true
+      become: true
+      become_user: "{{ username }}"
+
+    - name: Enable automatic remote tracking branch setup
+      community.general.git_config:
+        name: push.autoSetupRemote
+        scope: global
+        value: true
+      become: true
+      become_user: "{{ username }}"

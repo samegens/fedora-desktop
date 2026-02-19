@@ -1,0 +1,115 @@
+---
+- name: Install Visual Studio Code and related tools
+  tags: vscode
+  block:
+    - name: Install apt key for VS Code
+      ansible.builtin.apt_key:
+        url: "{{ visual_studio_code_mirror }}/keys/microsoft.asc"
+        state: present
+
+    - name: Install VS Code repo
+      ansible.builtin.apt_repository:
+        repo: 'deb [arch=amd64{{ visual_studio_code_gpgcheck | ternary("", " trusted=yes") }}] {{ visual_studio_code_mirror }}/repos/code stable main'
+        filename: vscode
+        state: present
+
+    - name: Install VS Code
+      ansible.builtin.apt:
+        name: "{{ visual_studio_code_package }}{{ (visual_studio_code_version | length > 0) | ternary('=' + visual_studio_code_version, '') }}"
+        state: present
+
+    - name: Install VS Code extensions
+      become: true
+      become_user: "{{ username }}"
+      ansible.builtin.command:
+        cmd: code --install-extension {{ item }}
+        creates: /home/{{ username }}/.vscode/extensions/{{ item }}-*/*.md
+      loop:
+        - redhat.ansible
+        - redhat.vscode-yaml
+        - yzhang.markdown-all-in-one
+        - mhutchie.git-graph
+        - ms-dotnettools.csdevkit
+        - ms-vscode-remote.remote-ssh
+        - ms-vscode-remote.remote-containers
+        - ms-vscode.cpptools-extension-pack
+        - ms-vscode.cmake-tools
+        - ms-python.python
+        - blauwelucht.ansible-go-to-definition
+        - rust-lang.rust-analyzer
+        - eamodio.gitlens
+        - esbenp.prettier-vscode
+        - hediet.vscode-drawio
+        - edgardmessias.clipboard-manager
+        - dbaeumer.vscode-eslint
+        - davidanson.vscode-markdownlint
+        - bierner.markdown-mermaid
+        - docker.docker
+        - tomoki1207.pdf
+        - platformio.platformio-ide
+        - github.vscode-github-actions
+
+    - name: Create config directories
+      ansible.builtin.file:
+        state: directory
+        path: /home/{{ username }}/.config/Code/User/{{ item }}
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0775"
+      loop:
+        - snippets
+
+    - name: Copy configuration files
+      ansible.builtin.template:
+        src: vscode/{{ item }}
+        dest: /home/{{ username }}/.config/Code/User/{{ item }}
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0664"
+      loop:
+        - keybindings.json
+        - settings.json
+        - snippets/csharp.json
+
+    - name: Install Microsoft repo package (needed for PowerShell)
+      ansible.builtin.apt:
+        deb: https://packages.microsoft.com/config/ubuntu/{{ ansible_distribution_version }}/packages-microsoft-prod.deb
+      register: apt_result
+
+    - name: Apt update
+      ansible.builtin.apt:
+        update_cache: true
+      when: apt_result.changed
+
+    - name: Install PowerShell
+      ansible.builtin.apt:
+        name: powershell
+
+    - name: Install .NET SDK
+      ansible.builtin.apt: # noqa package-latest
+        name:
+          - dotnet-runtime-8.0
+          - dotnet-sdk-8.0
+          - aspnetcore-runtime-8.0
+        state: latest
+
+    - name: Add DOTNET_ROOT to .bashrc
+      ansible.builtin.lineinfile:
+        path: ~/.bashrc
+        line: export DOTNET_ROOT=/usr/share/dotnet
+
+    # Prevent Ctrl-. from being stolen by IBus:
+    - name: Check if org.freedesktop.ibus.general.hotkey triggers is set
+      become: true
+      become_user: "{{ username }}"
+      ansible.builtin.command: gsettings get org.freedesktop.ibus.panel.emoji hotkey
+      changed_when: false
+      register: gsettings_result
+
+    - name: Disable Ctrl-. binding for emoji in IBus if set
+      become: true
+      become_user: "{{ username }}"
+      ansible.builtin.command: gsettings set org.freedesktop.ibus.panel.emoji hotkey "['']"
+      changed_when: true
+      when:
+        - gsettings_result.stdout != "['']"

@@ -1,0 +1,8 @@
+---
+- name: Install and configure Claude Code
+  tags: claude
+  block:
+    - name: Install Claude Code CLI
+      community.general.npm:
+        name: "@anthropic-ai/claude-code"
+        global: true

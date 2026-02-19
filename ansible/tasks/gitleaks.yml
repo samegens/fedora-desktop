@@ -1,0 +1,52 @@
+---
+- name: Install gitleaks
+  tags: gitleaks
+  block:
+    - name: Check if gitleaks is already installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/gitleaks
+      register: gitleaks_stat
+
+    - name: Get installed gitleaks version
+      ansible.builtin.command:
+        cmd: /usr/local/bin/gitleaks version
+      register: gitleaks_version_output
+      changed_when: false
+      failed_when: false
+      when: gitleaks_stat.stat.exists
+
+    - name: Set gitleaks version installed
+      ansible.builtin.set_fact:
+        gitleaks_version_installed: "{{ gitleaks_version_output.stdout | regex_search('v?[0-9.]+') | default('') | regex_replace('^v', '') }}"
+      when: gitleaks_stat.stat.exists and gitleaks_version_output.stdout is defined
+
+    - name: Download and install gitleaks
+      when: not gitleaks_stat.stat.exists or (gitleaks_version_installed is defined and gitleaks_version_installed != gitleaks_version)
+      vars:
+        tgz_path: /root/gitleaks.tar.gz
+      block:
+        - name: Download gitleaks
+          ansible.builtin.get_url:
+            url: "https://github.com/gitleaks/gitleaks/releases/download/v{{ gitleaks_version }}/gitleaks_{{ gitleaks_version }}_linux_x64.tar.gz"
+            dest: "{{ tgz_path }}"
+            mode: '0644'
+          check_mode: false
+
+        - name: Extract gitleaks
+          ansible.builtin.unarchive:
+            src: "{{ tgz_path }}"
+            dest: /usr/local/bin
+            remote_src: true
+            mode: '0755'
+            owner: root
+            group: root
+
+    - name: Verify gitleaks installation
+      ansible.builtin.command:
+        cmd: gitleaks version
+      register: gitleaks_version_check
+      changed_when: false
+
+    - name: Display gitleaks version
+      ansible.builtin.debug:
+        var: gitleaks_version_check.stdout

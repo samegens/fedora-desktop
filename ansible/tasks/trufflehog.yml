@@ -1,0 +1,53 @@
+---
+- name: Install TruffleHog
+  tags: trufflehog
+  block:
+    - name: Check if TruffleHog is already installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/trufflehog
+      register: trufflehog_stat
+
+    - name: Get installed TruffleHog version
+      ansible.builtin.command:
+        cmd: /usr/local/bin/trufflehog --version
+      register: trufflehog_version_output
+      changed_when: false
+      failed_when: false
+      when: trufflehog_stat.stat.exists
+
+    - name: Set TruffleHog version installed
+      ansible.builtin.set_fact:
+        trufflehog_version_installed: "{{ trufflehog_version_output.stdout | regex_search('v?[0-9.]+') | default('') | regex_replace('^v', '') }}"
+      when: trufflehog_stat.stat.exists and trufflehog_version_output.stdout is defined
+
+    - name: Download and install TruffleHog
+      when: not trufflehog_stat.stat.exists or (trufflehog_version_installed is defined and trufflehog_version_installed != trufflehog_version)
+      vars:
+        tgz_path: /root/trufflehog.tar.gz
+        base_url: https://github.com/trufflesecurity/trufflehog/releases/download
+      block:
+        - name: Download TruffleHog
+          ansible.builtin.get_url:
+            url: "{{ base_url }}/v{{ trufflehog_version }}/trufflehog_{{ trufflehog_version }}_linux_amd64.tar.gz"
+            dest: "{{ tgz_path }}"
+            mode: '0644'
+          check_mode: false
+
+        - name: Extract TruffleHog
+          ansible.builtin.unarchive:
+            src: "{{ tgz_path }}"
+            dest: /usr/local/bin
+            remote_src: true
+            mode: '0755'
+            owner: root
+            group: root
+
+    - name: Verify TruffleHog installation
+      ansible.builtin.command:
+        cmd: trufflehog --version
+      register: trufflehog_version_check
+      changed_when: false
+
+    - name: Display TruffleHog version
+      ansible.builtin.debug:
+        var: trufflehog_version_check.stdout

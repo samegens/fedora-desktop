@@ -1,0 +1,35 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.md": "markdown",
+			// Ansible
+			"**/defaults/**/*.yml": "ansible",
+			"**/group_vars/**/*": "ansible",
+			"**/host_vars/**/*": "ansible",
+			"**/vars/**/*.yml": "ansible",
+			"**/tasks/**/*.yml": "ansible",
+			"**/handlers/*.yml": "ansible",
+			"**/meta/*.yml": "ansible",
+			"**/roles/**/*.yml": "yaml", // Otherwise we get lint issues in roles
+			"**/playbooks/**/*.yml": "ansible",
+			"**/playbook*.yml": "ansible",
+			"**/ansible/**/hosts": "ini",
+			"**/ansible/**/inventory": "ini",
+			"**/inventory": "ini",
+			"ansible.cfg": "ini"
+		},
+		"ansible.python.interpreterPath": "/home/sebastiaan/python3-venv/ansible-latest/bin/python",
+		"ansible.python.activationScript": "/home/sebastiaan/python3-venv/ansible-latest/bin/activate"
+	},
+	"extensions": {
+		"recommendations": [
+			"blauwelucht.ansible-go-to-definition",
+			"redhat.ansible"
+		]
+	}
+}

@@ -1,0 +1,22 @@
+---
+- name: Configure Darktable
+  tags: darktable
+  block:
+    - name: Create Darktable config directory
+      ansible.builtin.file:
+        path: /home/{{ username }}/.var/app/org.darktable.Darktable/config/darktable
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0700"
+
+    - name: Copy Darktable config files
+      ansible.builtin.template:
+        src: darktable/{{ item }}
+        dest: /home/{{ username }}/.var/app/org.darktable.Darktable/config/darktable/{{ item }}
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0644"
+      loop:
+        - darktablerc
+        - shortcutsrc

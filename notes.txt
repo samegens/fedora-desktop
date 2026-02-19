@@ -1,0 +1,22 @@
+On the new machine:
+In BIOS, disable secure boot, change other settings as required.
+Install base system: Kubuntu 22.04 using LVM with encryption.
+Install ssh
+
+On an existing machine:
+Setup ssh connection to new machine
+az login --tenant c00e77d3-62dc-400a-913d-9ea51fc3535b
+In this repo: cd ansible && ./run.sh --limit remote
+scp some directories: git, company dirs, python3_venv as needed
+
+On the new machine:
+Start Dropbox to install and configure
+Configure taskbar to not group icons
+In Settings->Windows->Task switcher set the task switcher to Compact
+Configure Workrave
+Login to Firefox, configure search engine
+
+====================================
+
+To change the configuration on the local machine:
+In this repo: cd ansible && ./run.sh --limit localhost

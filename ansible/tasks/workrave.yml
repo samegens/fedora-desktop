@@ -1,0 +1,71 @@
+---
+
+- name: Install Workrave
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - workrave
+    - gnome-shell-extensions
+    - workrave-gnome
+  tags: workrave
+
+- name: Copy Workrave autostart file
+  ansible.builtin.copy:
+    src: workrave.desktop
+    dest: /home/sebastiaan/.config/autostart/workrave.desktop
+    owner: sebastiaan
+    group: sebastiaan
+    mode: "0644"
+  tags: workrave
+
+- name: Configure Workrave
+  become: true
+  become_method: ansible.builtin.su
+  become_user: sebastiaan
+  tags: workrave
+  block:
+    - name: Set Workrave microbreaks to 10 seconds
+      community.general.dconf:
+        key: "/org/workrave/timers/micro-pause/auto-reset"
+        value: "10"
+        state: present
+
+    - name: Set Workrave breaks to happen after 25 minutes
+      community.general.dconf:
+        key: "/org/workrave/timers/rest-break/limit"
+        value: "1500"
+        state: present
+
+    - name: Set Workrave breaks to 5 minutes
+      community.general.dconf:
+        key: "/org/workrave/timers/rest-break/auto-reset"
+        value: "300"
+        state: present
+
+    - name: Set Workrave day limit to 6 hours
+      community.general.dconf:
+        key: "/org/workrave/timers/daily-limit/limit"
+        value: "21600"
+        state: present
+
+    - name: Disable most Workrave sounds
+      community.general.dconf:
+        key: "{{ item }}"
+        value: "false"
+        state: present
+      with_items:
+        - "/org/workrave/sound/events/break-ignored-enabled"
+        - "/org/workrave/sound/events/break-prelude-enabled"
+        - "/org/workrave/sound/events/exercise-ended-enabled"
+        - "/org/workrave/sound/events/exercises-ended-enabled"
+        - "/org/workrave/sound/events/exercise-step-enabled"
+        - "/org/workrave/sound/events/micro-break-ended-enabled"
+        - "/org/workrave/sound/events/micro-break-started-enabled"
+        - "/org/workrave/sound/events/rest-break-started-enabled"
+
+    - name: Disable UI blocking
+      community.general.dconf:
+        key: /org/workrave/gui/breaks/block-mode
+        value: "0"
+        state: present

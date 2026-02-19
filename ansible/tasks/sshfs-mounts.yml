@@ -1,0 +1,73 @@
+---
+
+- name: Configure SSHFS mounts
+  tags: sshfs
+  vars:
+    sshfs_mounts:
+      - remote: "sam@homeserver:/data"
+        mount_point: "/mnt/homeserver-data"
+        identity_file: "/home/{{ username }}/.ssh/homeserver"
+        options: "defaults,_netdev,allow_other,reconnect,ServerAliveInterval=15,ServerAliveCountMax=3"
+
+  block:
+    - name: Install sshfs package
+      ansible.builtin.apt:
+        name: sshfs
+        state: present
+
+    - name: Ensure remote hosts are in root's known_hosts
+      ansible.builtin.known_hosts:
+        name: "{{ remote_host }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan ' + remote_host) }}"
+        state: present
+        path: /root/.ssh/known_hosts
+      vars:
+        remote_host: "{{ item.remote.split('@')[1].split(':')[0] }}"
+      loop: "{{ sshfs_mounts }}"
+
+    - name: Create mount point directories
+      ansible.builtin.file:
+        path: "{{ item.mount_point }}"
+        state: directory
+        mode: "0755"
+      loop: "{{ sshfs_mounts }}"
+
+    - name: Get user ID for mount options
+      ansible.builtin.command: id -u {{ username }}
+      register: user_id_result
+      changed_when: false
+
+    - name: Get group ID for mount options
+      ansible.builtin.command: id -g {{ username }}
+      register: group_id_result
+      changed_when: false
+
+    - name: Add SSHFS mounts to /etc/fstab
+      ansible.posix.mount:
+        path: "{{ item.mount_point }}"
+        src: "{{ item.remote }}"
+        fstype: fuse.sshfs
+        opts: "{{ item.options }},IdentityFile={{ item.identity_file }},uid={{ user_id_result.stdout }},gid={{ group_id_result.stdout }}"
+        state: present
+      loop: "{{ sshfs_mounts }}"
+      register: fstab_result
+      changed_when: true
+
+    - name: Remount SSHFS filesystems if fstab changed
+      ansible.posix.mount:
+        path: "{{ item.item.mount_point }}"
+        src: "{{ item.item.remote }}"
+        fstype: fuse.sshfs
+        state: remounted
+      loop: "{{ fstab_result.results }}"
+      when: item.changed
+      failed_when: false  # Don't fail if not mounted yet or remote server is not reachable
+
+    - name: Mount SSHFS filesystems (initial mount only)
+      ansible.posix.mount:
+        path: "{{ item.mount_point }}"
+        src: "{{ item.remote }}"
+        fstype: fuse.sshfs
+        opts: "{{ item.options }},IdentityFile={{ item.identity_file }},uid={{ user_id_result.stdout }},gid={{ group_id_result.stdout }}"
+        state: mounted
+      loop: "{{ sshfs_mounts }}"

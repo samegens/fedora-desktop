@@ -1,0 +1,32 @@
+---
+
+- name: Install V
+  when: install_v
+  tags: v
+  block:
+    - name: Ensure git directory
+      ansible.builtin.file:
+        path: /home/{{ username }}/git
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0755"
+        state: directory
+
+    - name: Clone V git repo
+      ansible.builtin.git:  # noqa: latest
+        repo: https://github.com/vlang/v
+        dest: /home/{{ username }}/git/v
+      register: git_result
+
+    - name: Build V
+      ansible.builtin.shell:
+        cmd: cd /home/{{ username }}/git/v && make
+      changed_when: true
+      become: true
+      become_user: "{{ username }}"
+      when: git_result.changed
+
+    - name: Create a system wide symlink to v
+      ansible.builtin.command:
+        cmd: /home/{{ username }}/git/v/v symlink
+        creates: /usr/local/bin/v

@@ -1,0 +1,37 @@
+---
+- name: Install powerline fonts, needed for special characters
+  ansible.builtin.apt:
+    name: fonts-powerline
+    state: present
+
+- name: Copy starship config
+  ansible.builtin.copy:
+    src: etc/starship.toml
+    dest: /etc/starship.toml
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Download starship binary
+  ansible.builtin.get_url:
+    url: "https://github.com/starship/starship/releases/download/{{ starship_version }}/starship-{{ ansible_machine }}-unknown-linux-musl.tar.gz"
+    dest: /root/starship.tar.gz
+    mode: '0644'
+
+- name: Extract starship
+  ansible.builtin.unarchive:
+    src: /root/starship.tar.gz
+    dest: /usr/local/bin
+    remote_src: true
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Configure Starship prompt for all users
+  ansible.builtin.blockinfile:
+    path: /etc/bash.bashrc
+    insertafter: EOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - STARSHIP"
+    block: |
+      export STARSHIP_CONFIG=/etc/starship.toml
+      eval "$(starship init bash)"

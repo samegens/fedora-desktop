@@ -1,0 +1,37 @@
+---
+
+- name: Configure Gnome
+  tags: gnome
+  when: use_gnome
+  block:
+    - name: Get Gnome favorites
+      ansible.builtin.command:
+        cmd: gsettings get org.gnome.shell favorite-apps
+      become: true
+      become_user: "{{ username }}"
+      changed_when: false
+      register: gsettings_result
+
+    - name: Set Gnome favorites
+      ansible.builtin.command:
+        cmd: gsettings set org.gnome.shell favorite-apps "{{ gnome_favorites }}"
+      become: true
+      become_user: "{{ username }}"
+      changed_when: true
+      when: gsettings_result.stdout != gnome_favorites
+
+    - name: Install gnome-extensions-cli
+      ansible.builtin.pip:
+        name: gnome-extensions-cli
+
+    # Note: this will only install and enable the extension, but not load it immediately.
+    # To load it immediately we need to use -D (Dbus), but then 'install' pop ups a
+    # confirmation dialog that can not be disabled.
+    # Automatic reloading of gnome-shell didn't work either, it gave a 'busy' error.
+    # TL;DR: restart Gnome after this task.
+    - name: Install gnome extension sound-output-device-chooser
+      ansible.builtin.command:
+        cmd: gnome-extensions-cli -F install sound-output-device-chooser@kgshank.net
+        creates: /home/{{ username }}/.local/share/gnome-shell/extensions/sound-output-device-chooser@kgshank.net
+      become: true
+      become_user: "{{ username }}"

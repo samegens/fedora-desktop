@@ -1,0 +1,45 @@
+---
+- name: Configure .bashrc
+  tags: rc
+  block:
+    - name: Add git branch to bash prompt
+      ansible.builtin.blockinfile:
+        path: /home/{{ username }}/.bashrc
+        block: |
+          parse_git_branch() {
+            git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+          }
+          PS1=`echo $PS1 | sed "s/..$/\\$(parse_git_branch)$ /"`
+
+    - name: Add RedHat developer credentials to .bashrc
+      ansible.builtin.lineinfile:
+        path: /home/{{ username }}/.bashrc
+        line: "{{ item }}"
+      loop:
+        - export RH_USER={{ redhat_developer_user }}
+        - export RH_PASS={{ redhat_developer_password }}
+      no_log: true
+
+    - name: Add Cargo bin to PATH
+      ansible.builtin.lineinfile:
+        path: /home/{{ username }}/.bashrc
+        line: export PATH="$HOME/.cargo/bin:$PATH"
+        state: present
+
+    - name: Add KUBECONFIG environment variable
+      ansible.builtin.lineinfile:
+        path: /home/{{ username }}/.bashrc
+        line: export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+        state: present
+
+    - name: Add aliases
+      ansible.builtin.lineinfile:
+        path: /home/{{ username }}/.bashrc
+        line: "{{ item }}"
+      loop:
+        - alias pandoc='docker run --rm -v "$(pwd):/data" -u $(id -u):$(id -g) pandoc/latex'
+        - alias sizeof='du -sh'
+        - 'ds() { if [ -z "$1" ]; then echo "Usage: ds <docker-image>"; return 1; fi; docker run --rm -it -v "$(pwd):/data" "$1" /bin/bash; }'
+        - alias ssh-fitpc='ssh -t sam@fitpc-tailscale byobu'
+        - alias ssh-cubi='ssh -t sam@cubi byobu'
+        - alias ssh-liteserver='ssh -t '
