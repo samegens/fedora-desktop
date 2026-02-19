@@ -379,9 +379,6 @@
         mode: "0600"
       tags: terraform
 
-    - name: Install Signal
-      ansible.builtin.include_tasks: tasks/signal.yml
-      tags: signal
 
     - name: Install P4Merge
       ansible.builtin.include_tasks: tasks/p4merge.yml

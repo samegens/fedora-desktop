@@ -74,3 +74,4 @@ flatpaks:
   - com.slack.Slack
   - com.spotify.Client
   - org.darktable.Darktable
+  - org.signal.Signal
