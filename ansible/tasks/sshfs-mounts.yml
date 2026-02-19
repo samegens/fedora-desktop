@@ -11,8 +11,8 @@
 
   block:
     - name: Install sshfs package
-      ansible.builtin.apt:
-        name: sshfs
+      ansible.builtin.dnf:
+        name: fuse-sshfs
         state: present
 
     - name: Ensure remote hosts are in root's known_hosts
