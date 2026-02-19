@@ -1,6 +1,6 @@
 ---
 # Make sure new-machine is configured in .ssh/config
-ansible_host: new-machine
+ansible_host: "192.168.88.90"
 ansible_user: sebastiaan
 ansible_connection: ssh
 
