@@ -1,28 +1,24 @@
 ---
 
 - name: Install Workrave
-  ansible.builtin.apt:
-    name: "{{ item }}"
+  ansible.builtin.dnf:
+    name: workrave
     state: present
-  with_items:
-    - workrave
-    - gnome-shell-extensions
-    - workrave-gnome
   tags: workrave
 
 - name: Copy Workrave autostart file
   ansible.builtin.copy:
     src: workrave.desktop
-    dest: /home/sebastiaan/.config/autostart/workrave.desktop
-    owner: sebastiaan
-    group: sebastiaan
+    dest: /home/{{ username }}/.config/autostart/workrave.desktop
+    owner: "{{ username }}"
+    group: "{{ username }}"
     mode: "0644"
   tags: workrave
 
 - name: Configure Workrave
   become: true
   become_method: ansible.builtin.su
-  become_user: sebastiaan
+  become_user: "{{ username }}"
   tags: workrave
   block:
     - name: Set Workrave microbreaks to 10 seconds
