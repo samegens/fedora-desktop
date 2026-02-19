@@ -103,9 +103,18 @@
         dest: /etc/vimrc.local
         mode: '0644'
 
+    - name: Add Flathub remote
+      community.general.flatpak_remote:
+        name: flathub
+        state: present
+        flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
+        method: system
+      tags: flatpak
+
     - name: Install needed flatpaks
       community.general.flatpak:
         name: "{{ flatpaks }}"
+        remote: flathub
         state: present
       tags: flatpak
 
