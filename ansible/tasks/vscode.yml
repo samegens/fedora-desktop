@@ -2,20 +2,27 @@
 - name: Install Visual Studio Code and related tools
   tags: vscode
   block:
-    - name: Install apt key for VS Code
-      ansible.builtin.apt_key:
-        url: "{{ visual_studio_code_mirror }}/keys/microsoft.asc"
-        state: present
+    - name: Add VS Code repository
+      ansible.builtin.get_url:
+        url: https://packages.microsoft.com/yumrepos/vscode/repodata/repomd.xml.key
+        dest: /etc/pki/rpm-gpg/microsoft-vscode.asc
+        mode: '0644'
 
-    - name: Install VS Code repo
-      ansible.builtin.apt_repository:
-        repo: 'deb [arch=amd64{{ visual_studio_code_gpgcheck | ternary("", " trusted=yes") }}] {{ visual_studio_code_mirror }}/repos/code stable main'
-        filename: vscode
-        state: present
+    - name: Add VS Code repo file
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/vscode.repo
+        content: |
+          [code]
+          name=Visual Studio Code
+          baseurl=https://packages.microsoft.com/yumrepos/vscode
+          enabled=1
+          gpgcheck=1
+          gpgkey=file:///etc/pki/rpm-gpg/microsoft-vscode.asc
+        mode: '0644'
 
     - name: Install VS Code
-      ansible.builtin.apt:
-        name: "{{ visual_studio_code_package }}{{ (visual_studio_code_version | length > 0) | ternary('=' + visual_studio_code_version, '') }}"
+      ansible.builtin.dnf:
+        name: "{{ visual_studio_code_package }}{{ (visual_studio_code_version | length > 0) | ternary('-' + visual_studio_code_version, '') }}"
         state: present
 
     - name: Install VS Code extensions
@@ -71,22 +78,13 @@
         - settings.json
         - snippets/csharp.json
 
-    - name: Install Microsoft repo package (needed for PowerShell)
-      ansible.builtin.apt:
-        deb: https://packages.microsoft.com/config/ubuntu/{{ ansible_distribution_version }}/packages-microsoft-prod.deb
-      register: apt_result
-
-    - name: Apt update
-      ansible.builtin.apt:
-        update_cache: true
-      when: apt_result.changed
-
     - name: Install PowerShell
-      ansible.builtin.apt:
+      ansible.builtin.dnf:
         name: powershell
+        state: present
 
     - name: Install .NET SDK
-      ansible.builtin.apt: # noqa package-latest
+      ansible.builtin.dnf: # noqa package-latest
         name:
           - dotnet-runtime-8.0
           - dotnet-sdk-8.0
@@ -95,7 +93,7 @@
 
     - name: Add DOTNET_ROOT to .bashrc
       ansible.builtin.lineinfile:
-        path: ~/.bashrc
+        path: /home/{{ username }}/.bashrc
         line: export DOTNET_ROOT=/usr/share/dotnet
 
     # Prevent Ctrl-. from being stolen by IBus:
