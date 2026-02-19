@@ -27,7 +27,7 @@
         state: link
 
     - name: Install PHP (required by TagUI)
-      ansible.builtin.apt:
+      ansible.builtin.dnf:
         name: php
 
     - name: Install Python package rpa
