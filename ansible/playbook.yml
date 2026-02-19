@@ -385,7 +385,7 @@
       tags: p4merge
 
     - name: Install iperf
-      ansible.builtin.apt:
+      ansible.builtin.dnf:
         name: iperf
       tags: iperf
 
