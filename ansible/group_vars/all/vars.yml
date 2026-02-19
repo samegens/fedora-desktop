@@ -56,7 +56,7 @@ dnf_packages:
   - ImageMagick
   - python3-pygame    # needed for home display
   - python3-influxdb  # needed for home display
-  - java-17-openjdk   # needed for TagUI
+  - java-21-openjdk   # needed for TagUI
   - traceroute
   - jq                # needed to format json
   - gimp
