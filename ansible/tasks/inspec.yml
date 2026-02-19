@@ -4,10 +4,12 @@
   tags: inspec
   block:
     - name: Install InSpec
-      ansible.builtin.apt:
-        deb: https://packages.chef.io/files/stable/inspec/4.52.9/ubuntu/20.04/inspec_4.52.9-1_amd64.deb
+      ansible.builtin.dnf:
+        name: https://packages.chef.io/files/stable/inspec/4.52.9/el/8/inspec-4.52.9-1.el8.x86_64.rpm
         state: present
+        disable_gpg_check: true
 
-    - name: Install ruby-dev
-      ansible.builtin.apt:
-        name: ruby-dev
+    - name: Install ruby-devel
+      ansible.builtin.dnf:
+        name: ruby-devel
+        state: present
