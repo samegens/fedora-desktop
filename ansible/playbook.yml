@@ -389,9 +389,6 @@
         name: iperf
       tags: iperf
 
-    - name: Configure Firefox
-      ansible.builtin.import_tasks:
-        file: tasks/firefox.yml
 
     - name: Install V
       ansible.builtin.import_tasks:
