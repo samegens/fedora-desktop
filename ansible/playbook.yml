@@ -291,9 +291,25 @@
       ansible.builtin.import_tasks:
         file: tasks/bashrc.yml
 
+    - name: Add Google Chrome repository
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/google-chrome.repo
+        mode: '0644'
+        content: |
+          [google-chrome]
+          name=google-chrome
+          baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://dl.google.com/linux/linux_signing_key.pub
+      tags:
+        - chrome
+        - tagui
+
     - name: Install Chrome (needed for TagUI)
-      ansible.builtin.apt:
-        deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      ansible.builtin.dnf:
+        name: google-chrome-stable
+        state: present
       tags:
         - chrome
         - tagui
