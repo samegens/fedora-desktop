@@ -148,13 +148,27 @@
       notify: Reload sysctl config
       tags: sysctl
 
+    - name: Add Oracle VirtualBox repository
+      ansible.builtin.get_url:
+        url: https://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo
+        dest: /etc/yum.repos.d/virtualbox.repo
+        mode: '0644'
+      tags: virtualbox
+
     - name: Install VirtualBox
-      ansible.builtin.apt:
+      ansible.builtin.dnf:
         name:
-          - virtualbox
-          - virtualbox-dkms
-          - linux-headers-generic
+          - VirtualBox-7.1
+          - kernel-devel
+          - kernel-headers
         state: present
+      tags: virtualbox
+
+    - name: Add user to vboxusers group
+      ansible.builtin.user:
+        name: "{{ username }}"
+        groups: vboxusers
+        append: true
       tags: virtualbox
 
     - name: Create /etc/vbox directory
