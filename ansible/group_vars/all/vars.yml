@@ -46,30 +46,28 @@ fitpc_ip: "192.168.2.69"
 
 fallback_dns_ip: "9.9.9.9"
 
-apt_packages:
+dnf_packages:
   - byobu
   - vim
-  - keepassx
+  - keepassxc
   - okular            # Okular (pdf reader)
   - ansible-lint
-  - smbclient
-  - imagemagick
-  - gnome-tweaks
+  - samba-client
+  - ImageMagick
   - python3-pygame    # needed for home display
   - python3-influxdb  # needed for home display
-  - openjdk-17-jdk    # needed for TagUI
-  - python-is-python3 # Set Python3 as the default Python
+  - java-17-openjdk   # needed for TagUI
   - traceroute
   - jq                # needed to format json
   - gimp
   - htop
-  - libfontconfig1-dev # needed for musicxml-analyzer
-  - pkg-config         # needed for musicxml-analyzer
-  - simple-scan        # needed to scan documents
-  - gh                 # needed to create Github repos from the cmdline
-  - sshfs              # needed to easily use files from homeserver
-  - openssh-server     # to use sshfs with this machine
-  - nfs-common         # to be able to mount NFS shares
+  - fontconfig-devel  # needed for musicxml-analyzer
+  - pkg-config        # needed for musicxml-analyzer
+  - simple-scan       # needed to scan documents
+  - gh                # needed to create Github repos from the cmdline
+  - fuse-sshfs        # needed to easily use files from homeserver
+  - openssh-server    # to use sshfs with this machine
+  - nfs-utils         # to be able to mount NFS shares
 
 flatpaks:
   - md.obsidian.Obsidian

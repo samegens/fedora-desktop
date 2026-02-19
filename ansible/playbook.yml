@@ -1,5 +1,5 @@
 ---
-- name: Configure Ubuntu desktop
+- name: Configure Fedora desktop
   hosts: all
   vars:
     install_v: false
@@ -9,10 +9,9 @@
     ansible_python_interpreter: /usr/bin/python3
 
   pre_tasks:
-    - name: Update apt cache
-      ansible.builtin.apt:
+    - name: Update dnf cache
+      ansible.builtin.dnf:
         update_cache: true
-        cache_valid_time: 3600
       tags: always
 
     - name: Check if venv Python exists
@@ -25,13 +24,6 @@
       ansible.builtin.set_fact:
         ansible_python_interpreter: "{{ venv_python }}"
       when: venv_python_stat.stat.exists
-      tags: always
-
-    - name: Create keyrings directory
-      ansible.builtin.file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
       tags: always
 
   roles:
@@ -89,28 +81,27 @@
         - path: .local/share/icons
       tags: dirs
 
-    - name: Install Python packages via apt
-      ansible.builtin.apt:
+    - name: Install Python packages via dnf
+      ansible.builtin.dnf:
         name:
           - python3-psutil   # needed for dconf
           - python3-docker
-          - python3-debian   # needed for deb822_repository
         state: present
-
-    - name: Create global vimrc
-      ansible.builtin.get_url:
-        url: https://raw.githubusercontent.com/samegens/dotfiles/master/.vimrc
-        dest: /etc/vim/vimrc.local
-        mode: '0644'
 
     - name: Install and configure Git
       ansible.builtin.import_tasks: tasks/git.yml
 
-    - name: Install needed apt packages
-      ansible.builtin.apt:
-        name: "{{ apt_packages }}"
+    - name: Install needed dnf packages
+      ansible.builtin.dnf:
+        name: "{{ dnf_packages }}"
         state: present
-      tags: apt
+      tags: dnf
+
+    - name: Create global vimrc
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/samegens/dotfiles/master/.vimrc
+        dest: /etc/vimrc.local
+        mode: '0644'
 
     - name: Install needed flatpaks
       community.general.flatpak:
