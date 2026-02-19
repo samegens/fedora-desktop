@@ -130,14 +130,6 @@
       ansible.builtin.import_tasks: tasks/workrave.yml
       tags: workrave
 
-    - name: Prefer IPv4 over IPv6
-      ansible.builtin.lineinfile:
-        path: /etc/gai.conf
-        regexp: "^#?precedence ::ffff:0:0/96"
-        line: "precedence ::ffff:0:0/96  100"
-        state: present
-      tags: network
-
     - name: Make sure Dropbox can monitor all files and node works properly (1)
       ansible.builtin.lineinfile:
         path: /etc/sysctl.conf
@@ -485,6 +477,14 @@
 
     - name: Install Tailscale
       ansible.builtin.import_tasks: tasks/tailscale.yml
+
+    - name: Prefer IPv4 over IPv6
+      ansible.builtin.lineinfile:
+        path: /etc/gai.conf
+        regexp: "^#?precedence ::ffff:0:0/96"
+        line: "precedence ::ffff:0:0/96  100"
+        state: present
+      tags: network
 
   handlers:
     - name: Reload sysctl config
