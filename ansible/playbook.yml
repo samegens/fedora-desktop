@@ -9,6 +9,13 @@
     ansible_python_interpreter: /usr/bin/python3
 
   pre_tasks:
+    - name: Enable RPMFusion free repository
+      ansible.builtin.dnf:
+        name: "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+        state: present
+        disable_gpg_check: true
+      tags: always
+
     - name: Update dnf cache
       ansible.builtin.dnf:
         update_cache: true
