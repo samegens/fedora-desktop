@@ -9,20 +9,27 @@
         opts: "defaults,_netdev"
 
   block:
+    - name: Enable NFS client services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - rpcbind
+        - nfs-client.target
+
     - name: Create NFS mount point directories
       ansible.builtin.file:
         path: "{{ item.mount_point }}"
         state: directory
-        owner: root
-        group: root
         mode: "0755"
       loop: "{{ nfs_mounts }}"
 
-    - name: Mount NFS filesystems
+    - name: Add NFS mounts to fstab
       ansible.posix.mount:
         path: "{{ item.mount_point }}"
         src: "{{ item.src }}"
         fstype: nfs
         opts: "{{ item.opts }}"
-        state: mounted
+        state: present
       loop: "{{ nfs_mounts }}"
