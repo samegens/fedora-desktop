@@ -38,6 +38,7 @@
         path: /home/{{ username }}/.bashrc
         line: "{{ item }}"
       loop:
+        - alias ll='ls -alF'
         - alias pandoc='docker run --rm -v "$(pwd):/data" -u $(id -u):$(id -g) pandoc/latex'
         - alias sizeof='du -sh'
         - 'ds() { if [ -z "$1" ]; then echo "Usage: ds <docker-image>"; return 1; fi; docker run --rm -it -v "$(pwd):/data" "$1" /bin/bash; }'
