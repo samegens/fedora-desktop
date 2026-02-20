@@ -2,14 +2,7 @@
 - name: Install Microsoft TTFs
   tags: ttf
   block:
-    - name: Pre-accept the Microsoft Core Fonts EULA
-      ansible.builtin.debconf:
-        name: ttf-mscorefonts-installer
-        question: msttcorefonts/accepted-mscorefonts-eula
-        value: "true"
-        vtype: boolean
-
-    - name: Install ttf-mscorefonts-installer
-      ansible.builtin.apt:
-        name: ttf-mscorefonts-installer
+    - name: Install mscore-fonts-all
+      ansible.builtin.dnf:
+        name: mscore-fonts-all
         state: present

@@ -2,30 +2,6 @@
 
 - name: Install Fastfetch.
   tags: fastfetch
-  block:
-    - name: Download Fastfetch
-      ansible.builtin.get_url:
-        url: https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.tar.gz
-        dest: /root/fastfetch.tar.gz
-        mode: "0644"
-        owner: root
-        group: root
-      check_mode: false
-
-    - name: Extract Fastfetch
-      ansible.builtin.unarchive:
-        src: /root/fastfetch.tar.gz
-        remote_src: true
-        dest: /opt
-        mode: "0755"
-        owner: root
-        group: root
-        creates: /opt/fastfetch-linux-amd64/usr/bin/fastfetch
-
-    - name: Create link in /usr/local/bin
-      ansible.builtin.file:
-        src: /opt/fastfetch-linux-amd64/usr/bin/fastfetch
-        dest: /usr/local/bin/fastfetch
-        state: link
-        owner: root
-        group: root
+  ansible.builtin.dnf:
+    name: fastfetch
+    state: present

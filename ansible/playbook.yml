@@ -38,6 +38,7 @@
       vars:
         docker_users:
           - "{{ username }}"
+        docker_install_compose: false  # docker compose v2 is built into Docker CLI
       tags: docker
     - geerlingguy.pip
     - geerlingguy.ansible
@@ -93,6 +94,7 @@
         name:
           - python3-psutil # needed for dconf
           - python3-docker
+          - python3-passlib # needed for password_hash filter
         state: present
 
     - name: Install and configure Git
@@ -403,7 +405,6 @@
       ansible.builtin.import_tasks:
         file: tasks/printer.yml
 
-
     - name: Install Double Commander
       ansible.builtin.import_tasks: tasks/doublecmd.yml
       tags: doublecmd
@@ -411,33 +412,6 @@
     - name: Install Node.js
       ansible.builtin.import_tasks:
         file: tasks/nodejs.yml
-
-    - name: Install FreeCAD
-      ansible.builtin.import_tasks:
-        file: tasks/freecad.yml
-
-    - name: Install PrusaSlicer
-      ansible.builtin.import_tasks:
-        file: tasks/prusa-slicer.yml
-
-    - name: Install Spotify
-      community.general.flatpak:
-        name: com.spotify.Client
-      tags: spotify
-
-    - name: Add VeraCrypt APT PPA
-      ansible.builtin.apt_repository:
-        repo: ppa:unit193/encryption
-      tags: veracrypt
-
-    - name: Install VeraCrypt
-      ansible.builtin.apt:
-        name: veracrypt
-      tags: veracrypt
-
-    - name: Install Betterbird
-      ansible.builtin.import_tasks:
-        file: tasks/betterbird.yml
 
     - name: Install Microsoft TTFs
       ansible.builtin.import_tasks:
@@ -451,9 +425,6 @@
         sysctl_set: true # Ensure the value is applied immediately
         reload: true # Reload the sysctl values from configuration
       tags: vm_max_map_count
-
-    - name: Install draw.io
-      ansible.builtin.import_tasks: tasks/drawio.yml
 
     - name: Install Starship
       ansible.builtin.import_tasks: tasks/starship.yml
@@ -481,20 +452,17 @@
 
     - name: Install balenaEtcher
       ansible.builtin.import_tasks: tasks/balena-etcher.yml
+      tags: balena-etcher
+
+    - name: Install VeraCrypt
+      ansible.builtin.import_tasks: tasks/veracrypt.yml
+      tags: veracrypt
 
     - name: Configure hibernate
       ansible.builtin.import_tasks: tasks/hibernate.yml
 
     - name: Install Tailscale
       ansible.builtin.import_tasks: tasks/tailscale.yml
-
-    - name: Prefer IPv4 over IPv6
-      ansible.builtin.lineinfile:
-        path: /etc/gai.conf
-        regexp: "^#?precedence ::ffff:0:0/96"
-        line: "precedence ::ffff:0:0/96  100"
-        state: present
-      tags: network
 
   handlers:
     - name: Reload sysctl config

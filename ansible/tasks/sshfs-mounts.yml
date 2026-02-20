@@ -51,7 +51,6 @@
         state: present
       loop: "{{ sshfs_mounts }}"
       register: fstab_result
-      changed_when: true
 
     - name: Remount SSHFS filesystems if fstab changed
       ansible.posix.mount:

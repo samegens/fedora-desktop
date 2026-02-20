@@ -1,0 +1,15 @@
+---
+- name: Install VeraCrypt
+  tags: veracrypt
+  block:
+    - name: Download VeraCrypt RPM
+      ansible.builtin.get_url:
+        url: "https://launchpad.net/veracrypt/trunk/{{ veracrypt_version }}/+download/veracrypt-{{ veracrypt_version }}-Fedora-40-x86_64.rpm"
+        dest: "/root/veracrypt-{{ veracrypt_version }}.x86_64.rpm"
+        mode: "0644"
+
+    - name: Install VeraCrypt RPM
+      ansible.builtin.dnf:
+        name: "/root/veracrypt-{{ veracrypt_version }}.x86_64.rpm"
+        state: present
+        disable_gpg_check: true

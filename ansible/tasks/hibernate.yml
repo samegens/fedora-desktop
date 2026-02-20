@@ -2,18 +2,25 @@
 - name: Configure hibernate
   tags: hibernate
   block:
+    - name: Create logind.conf.d directory
+      ansible.builtin.file:
+        path: /etc/systemd/logind.conf.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
     - name: Enable hibernate
-      ansible.builtin.lineinfile:
-        path: /etc/systemd/logind.conf
-        regex: "{{ item.regex }}"
-        line: "{{ item.line }}"
-      loop:
-        - regex: "^.*HandleSuspendKey\\s*=.*$"
-          line: HandleSuspendKey=hibernate
-        - regex: "^.*HandleLidSwitch\\s*=.*$"
-          line: HandleLidSwitch=hibernate
+      ansible.builtin.copy:
+        dest: /etc/systemd/logind.conf.d/hibernate.conf
+        content: |
+          [Login]
+          HandleSuspendKey=hibernate
+          HandleLidSwitch=hibernate
+        owner: root
+        group: root
+        mode: "0644"
       notify: Restart systemd-logind
-      tags: hibernate
 
     - name: Enable sudo-less hibernate
       ansible.builtin.copy:
@@ -21,11 +28,10 @@
         content: |
           polkit.addRule(function(action, subject) {
               if (action.id == "org.freedesktop.login1.hibernate" &&
-                  subject.isInGroup("sudo")) {
+                  subject.isInGroup("wheel")) {
                   return polkit.Result.YES;
               }
           });
         owner: root
         group: root
         mode: "0644"
-      tags: hibernate

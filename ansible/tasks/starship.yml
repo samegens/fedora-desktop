@@ -1,7 +1,7 @@
 ---
 - name: Install powerline fonts, needed for special characters
-  ansible.builtin.apt:
-    name: fonts-powerline
+  ansible.builtin.dnf:
+    name: powerline-fonts
     state: present
 
 - name: Copy starship config
@@ -29,7 +29,7 @@
 
 - name: Configure Starship prompt for all users
   ansible.builtin.blockinfile:
-    path: /etc/bash.bashrc
+    path: /etc/bashrc
     insertafter: EOF
     marker: "# {mark} ANSIBLE MANAGED BLOCK - STARSHIP"
     block: |

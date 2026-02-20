@@ -2,28 +2,21 @@
 - name: Install Node.js
   tags: nodejs
   block:
-    - name: Download NodeSource GPG key
+    - name: Add NodeSource repository
       ansible.builtin.get_url:
-        url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
-        dest: /etc/apt/keyrings/nodesource.asc
-        mode: '0644'
+        url: https://rpm.nodesource.com/setup_20.x
+        dest: /tmp/nodesource_setup.sh
+        mode: '0755'
 
-    - name: Add NodeSource repository (DEB822 format)
-      ansible.builtin.deb822_repository:
-        name: nodesource
-        types: deb
-        uris: https://deb.nodesource.com/node_20.x
-        suites: nodistro
-        components: main
-        signed_by: /etc/apt/keyrings/nodesource.asc
-        state: present
-      register: repo_result
+    - name: Run NodeSource setup script
+      ansible.builtin.command:
+        cmd: bash /tmp/nodesource_setup.sh
+        creates: /etc/yum.repos.d/nodesource-nodejs.repo
 
     - name: Install Node.js
-      ansible.builtin.apt: # noqa: package-latest
+      ansible.builtin.dnf: # noqa: package-latest
         name: nodejs
         state: latest
-        update_cache: "{{ repo_result.changed }}"
 
     - name: Install TypeScript (needed to transpile .ts to .js)
       community.general.npm:
@@ -34,4 +27,4 @@
     - name: Install VSCE (needed to publish vscode extensions)
       ansible.builtin.command:
         cmd: npm install -g @vscode/vsce
-        creates: /usr/local/bin/vsce
+        creates: /usr/lib/node_modules/@vscode/vsce

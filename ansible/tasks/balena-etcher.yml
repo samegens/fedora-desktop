@@ -1,6 +1,15 @@
 ---
-
 - name: Install balenaEtcher
   tags: balena-etcher
-  ansible.builtin.apt:
-    deb: "https://github.com/balena-io/etcher/releases/download/v{{ balena_etcher_version }}/balena-etcher_{{ balena_etcher_version }}_amd64.deb"
+  block:
+    - name: Download balenaEtcher RPM
+      ansible.builtin.get_url:
+        url: "https://github.com/balena-io/etcher/releases/download/v{{ balena_etcher_version }}/balena-etcher-{{ balena_etcher_version }}-1.x86_64.rpm"
+        dest: "/root/balena-etcher-{{ balena_etcher_version }}-1.x86_64.rpm"
+        mode: "0644"
+
+    - name: Install balenaEtcher RPM
+      ansible.builtin.dnf:
+        name: "/root/balena-etcher-{{ balena_etcher_version }}-1.x86_64.rpm"
+        state: present
+        disable_gpg_check: true
