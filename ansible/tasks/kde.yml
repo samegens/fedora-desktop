@@ -10,24 +10,32 @@
         line: 'Switch to Desktop 3=none,Ctrl+F3,Switch to Desktop 3'
         state: present
 
-    - name: Get touchpad device name
+    - name: Get touchpad device info
       ansible.builtin.shell:
         cmd: |
           set -euo pipefail
-          grep -A 5 "Touchpad" /proc/bus/input/devices | grep "Name=" | sed 's/.*"\(.*\)".*/\1/'
+          block=$(awk 'BEGIN{RS=""; FS="\n"} /N:.*[Tt]ouchpad/{print; exit}' /proc/bus/input/devices)
+          name=$(echo "$block" | grep "^N:" | sed 's/N: Name="\(.*\)"/\1/')
+          vendor_hex=$(echo "$block" | grep "^I:" | grep -oP '(?<=Vendor=)[0-9a-fA-F]+')
+          product_hex=$(echo "$block" | grep "^I:" | grep -oP '(?<=Product=)[0-9a-fA-F]+')
+          vendor_dec=$((16#$vendor_hex))
+          product_dec=$((16#$product_hex))
+          echo "${vendor_dec}|${product_dec}|${name}"
         executable: /bin/bash
-      register: shell_result
+      register: touchpad_info
       changed_when: false
       check_mode: false
 
-    - name: Display touch pad device name
-      ansible.builtin.debug:
-        var: shell_result
+    - name: Set touchpad device facts
+      ansible.builtin.set_fact:
+        touchpad_vendor_id: "{{ touchpad_info.stdout.split('|')[0] }}"
+        touchpad_product_id: "{{ touchpad_info.stdout.split('|')[1] }}"
+        touchpad_name: "{{ touchpad_info.stdout.split('|')[2] }}"
 
     - name: Change touchpad settings
       community.general.ini_file:
-        path: "/home/{{ username }}/.config/touchpadxlibinputrc"
-        section: "{{ shell_result.stdout }}"
+        path: "/home/{{ username }}/.config/kcminputrc"
+        section: "Libinput][{{ touchpad_vendor_id }}][{{ touchpad_product_id }}][{{ touchpad_name }}"
         option: "{{ item.option }}"
         value: "{{ item.value }}"
         ignore_spaces: true
@@ -35,13 +43,13 @@
         owner: "{{ username }}"
         group: "{{ username }}"
       loop:
-        - option: naturalScroll
+        - option: NaturalScroll
           value: "true"
           description: Use natural scrolling (backwards scrolls down)
-        - option: tapDragLock
+        - option: TapDragLock
           value: "true"
           description: Dragging continues after shortly lifting fingers
-        - option: tapToClick
+        - option: TapToClick
           value: "true"
           description: Tap performs click
       loop_control:
