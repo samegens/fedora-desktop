@@ -78,7 +78,7 @@ flatpaks:
   - org.darktable.Darktable
   - org.signal.Signal
   - com.dropbox.Client
-  - org.freecadweb.FreeCAD
+  - org.freecad.FreeCAD
   - com.prusa3d.PrusaSlicer
   - eu.betterbird.Betterbird
   - ch.protonmail.protonmail-bridge
