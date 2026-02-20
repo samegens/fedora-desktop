@@ -405,10 +405,6 @@
       ansible.builtin.import_tasks:
         file: tasks/printer.yml
 
-    - name: Fix touchpad
-      ansible.builtin.apt:
-        name: xserver-xorg-input-synaptics
-      tags: touchpad
 
     - name: Copy .ssh
       ansible.builtin.copy:
