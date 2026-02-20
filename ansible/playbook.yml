@@ -42,8 +42,7 @@
       tags: docker
     - geerlingguy.pip
     - geerlingguy.ansible
-    - role: darkwizard242.azurecli
-      tags: azure
+
 
   tasks:
     - name: Set locale
@@ -96,6 +95,14 @@
           - python3-docker
           - python3-passlib # needed for password_hash filter
         state: present
+
+    - name: Remove obsolete repositories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/yum.repos.d/signal-stable.repo
+      tags: cleanup
 
     - name: Install and configure Git
       ansible.builtin.import_tasks: tasks/git.yml

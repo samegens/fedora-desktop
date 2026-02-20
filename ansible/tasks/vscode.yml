@@ -84,6 +84,13 @@
         dest: /etc/yum.repos.d/microsoft-prod.repo
         mode: '0644'
 
+    - name: Exclude azure-cli from Microsoft prod repo (use Fedora native package instead)
+      ansible.builtin.lineinfile:
+        path: /etc/yum.repos.d/microsoft-prod.repo
+        insertafter: '^\[packages-microsoft-com-prod\]'
+        regexp: '^excludepkgs='
+        line: 'excludepkgs=azure-cli'
+
     - name: Install PowerShell
       ansible.builtin.dnf:
         name: powershell
