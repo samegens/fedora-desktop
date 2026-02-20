@@ -2,7 +2,7 @@
 - name: Configure .bashrc
   tags: rc
   block:
-    - name: Add git branch to bash prompt
+    - name: Remove obsolete git branch PS1 hack
       ansible.builtin.blockinfile:
         path: /home/{{ username }}/.bashrc
         block: |
@@ -10,6 +10,7 @@
             git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
           }
           PS1=`echo $PS1 | sed "s/..$/\\$(parse_git_branch)$ /"`
+        state: absent
 
     - name: Add RedHat developer credentials to .bashrc
       ansible.builtin.lineinfile:
