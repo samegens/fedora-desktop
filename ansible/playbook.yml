@@ -38,11 +38,10 @@
       vars:
         docker_users:
           - "{{ username }}"
-        docker_install_compose: false  # docker compose v2 is built into Docker CLI
+        docker_install_compose: false # docker compose v2 is built into Docker CLI
       tags: docker
     - geerlingguy.pip
     - geerlingguy.ansible
-
 
   tasks:
     - name: Set locale
@@ -95,14 +94,6 @@
           - python3-docker
           - python3-passlib # needed for password_hash filter
         state: present
-
-    - name: Remove obsolete repositories
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - /etc/yum.repos.d/signal-stable.repo
-      tags: cleanup
 
     - name: Install and configure Git
       ansible.builtin.import_tasks: tasks/git.yml
