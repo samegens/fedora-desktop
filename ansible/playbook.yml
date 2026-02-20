@@ -91,7 +91,7 @@
     - name: Install Python packages via dnf
       ansible.builtin.dnf:
         name:
-          - python3-psutil   # needed for dconf
+          - python3-psutil # needed for dconf
           - python3-docker
         state: present
 
@@ -108,7 +108,7 @@
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/samegens/dotfiles/master/.vimrc
         dest: /etc/vimrc.local
-        mode: '0644'
+        mode: "0644"
 
     - name: Add Flathub remote
       community.general.flatpak_remote:
@@ -159,7 +159,7 @@
       ansible.builtin.get_url:
         url: https://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo
         dest: /etc/yum.repos.d/virtualbox.repo
-        mode: '0644'
+        mode: "0644"
       tags: virtualbox
 
     - name: Install VirtualBox
@@ -182,14 +182,14 @@
       ansible.builtin.file:
         path: /etc/vbox
         state: directory
-        mode: '0755'
+        mode: "0755"
       tags: virtualbox
 
     - name: Extend VirtualBox static IP range
       ansible.builtin.copy:
         dest: /etc/vbox/networks.conf
         content: "* 192.168.0.0/16"
-        mode: '0644'
+        mode: "0644"
       tags: virtualbox
 
     - name: Install Vagrant
@@ -217,21 +217,21 @@
         dest: /etc/hosts
         line: "{{ item }}"
       with_items:
-        - '192.168.34.10  thuis-tst.blauwe-lucht.nl'
-        - '192.168.34.10  samtris-tst.blauwe-lucht.nl'
-        - '192.168.34.10  oogdesmeesters-tst.blauwe-lucht.nl'
-        - '192.168.34.10  fitlet-tst'
-        - '192.168.34.10  walangtext-tst.blauwe-lucht.nl'
-        - '192.168.34.10  miro-card-shuffle-dev-tst.blauwe-lucht.nl'
-        - '192.168.34.20  walangtext-tst.blauwelucht.nl'
-        - '192.168.34.20  samtris-tst.blauwelucht.nl'
-        - '192.168.34.20  oogdesmeesters-tst.blauwelucht.nl'
-        - '192.168.34.20  liteserver-tst'
-        - '5.2.74.226     liteserver'
-        - '20.229.92.206  fitlet-acc'
-        - '142.250.179.174 youtube.com'
-        - '142.251.209.238 www.youtube.com'
-        - '142.251.39.142  youtu.be'
+        - "192.168.34.10  thuis-tst.blauwe-lucht.nl"
+        - "192.168.34.10  samtris-tst.blauwe-lucht.nl"
+        - "192.168.34.10  oogdesmeesters-tst.blauwe-lucht.nl"
+        - "192.168.34.10  fitlet-tst"
+        - "192.168.34.10  walangtext-tst.blauwe-lucht.nl"
+        - "192.168.34.10  miro-card-shuffle-dev-tst.blauwe-lucht.nl"
+        - "192.168.34.20  walangtext-tst.blauwelucht.nl"
+        - "192.168.34.20  samtris-tst.blauwelucht.nl"
+        - "192.168.34.20  oogdesmeesters-tst.blauwelucht.nl"
+        - "192.168.34.20  liteserver-tst"
+        - "5.2.74.226     liteserver"
+        - "20.229.92.206  fitlet-acc"
+        - "142.250.179.174 youtube.com"
+        - "142.251.209.238 www.youtube.com"
+        - "142.251.39.142  youtu.be"
       tags: hosts
 
     - name: Remove obsolete hosts entries
@@ -240,15 +240,15 @@
         line: "{{ item }}"
         state: absent
       with_items:
-        - '{{ fitlet_ip }}   fitlet'
-        - '192.168.2.71   homedisplaypi'
-        - '192.168.2.70   meterkastpi'
-        - '{{ fitpc_ip }}   pihole.local'
-        - '{{ fitpc_ip }}   fitpc'
-        - '192.168.17.32  fitpc-tst'
-        - '142.250.185.206 youtube.com'
-        - '142.250.185.206 www.youtube.com'
-        - '142.250.179.174 youtu.be'
+        - "{{ fitlet_ip }}   fitlet"
+        - "192.168.2.71   homedisplaypi"
+        - "192.168.2.70   meterkastpi"
+        - "{{ fitpc_ip }}   pihole.local"
+        - "{{ fitpc_ip }}   fitpc"
+        - "192.168.17.32  fitpc-tst"
+        - "142.250.185.206 youtube.com"
+        - "142.250.185.206 www.youtube.com"
+        - "142.250.179.174 youtu.be"
       tags: hosts
 
     - name: Configure Visual Studio Code
@@ -301,7 +301,7 @@
     - name: Add Google Chrome repository
       ansible.builtin.copy:
         dest: /etc/yum.repos.d/google-chrome.repo
-        mode: '0644'
+        mode: "0644"
         content: |
           [google-chrome]
           name=google-chrome
@@ -386,7 +386,6 @@
         mode: "0600"
       tags: terraform
 
-
     - name: Install P4Merge
       ansible.builtin.include_tasks: tasks/p4merge.yml
       tags: p4merge
@@ -395,7 +394,6 @@
       ansible.builtin.dnf:
         name: iperf
       tags: iperf
-
 
     - name: Install V
       ansible.builtin.import_tasks:
@@ -406,24 +404,9 @@
         file: tasks/printer.yml
 
 
-    - name: Copy .ssh
-      ansible.builtin.copy:
-        src: ~/.ssh/
-        dest: /home/{{ username }}/.ssh
-        owner: "{{ username }}"
-        group: "{{ username }}"
-        mode: "0600"
-      when: copy_dot_ssh
-      tags: ssh
-
     - name: Install Double Commander
       ansible.builtin.import_tasks: tasks/doublecmd.yml
       tags: doublecmd
-
-    - name: Install Dropbox
-      ansible.builtin.apt:
-        name: nautilus-dropbox
-      tags: dropbox
 
     - name: Install Node.js
       ansible.builtin.import_tasks:
@@ -465,8 +448,8 @@
         name: vm.max_map_count
         value: 262144
         state: present
-        sysctl_set: true  # Ensure the value is applied immediately
-        reload: true      # Reload the sysctl values from configuration
+        sysctl_set: true # Ensure the value is applied immediately
+        reload: true # Reload the sysctl values from configuration
       tags: vm_max_map_count
 
     - name: Install draw.io
