@@ -67,6 +67,7 @@ dnf_packages:
   - pkg-config        # needed for musicxml-analyzer
   - simple-scan       # needed to scan documents
   - gh                # needed to create Github repos from the cmdline
+  - ncdu
   - azure-cli         # Azure CLI (Fedora native, avoids conflict with Microsoft repo)
   - fuse-sshfs        # needed to easily use files from homeserver
   - openssh-server    # to use sshfs with this machine
