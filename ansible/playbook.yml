@@ -459,9 +459,6 @@
     - name: Configure hibernate
       ansible.builtin.import_tasks: tasks/hibernate.yml
 
-    - name: Install Tailscale
-      ansible.builtin.import_tasks: tasks/tailscale.yml
-
   handlers:
     - name: Reload sysctl config
       ansible.builtin.command:
