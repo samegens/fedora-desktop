@@ -21,6 +21,24 @@
         update_cache: true
       tags: always
 
+    - name: Check if passlib is available on the controller
+      ansible.builtin.command: python3 -c "import passlib"
+      delegate_to: localhost
+      become: false
+      changed_when: false
+      failed_when: false
+      register: passlib_check_result
+      tags: always
+
+    - name: Fail if passlib is not available on the controller
+      ansible.builtin.fail:
+        msg: >
+          passlib is not available on the controller. You should probably run:
+          source ~/python3-venv/ansible-latest/bin/activate
+      when: passlib_check_result.rc != 0
+      delegate_to: localhost
+      become: false
+      tags: always
     - name: Check if venv Python exists
       ansible.builtin.stat:
         path: "{{ venv_python }}"
