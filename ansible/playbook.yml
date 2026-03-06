@@ -39,6 +39,7 @@
       delegate_to: localhost
       become: false
       tags: always
+
     - name: Check if venv Python exists
       ansible.builtin.stat:
         path: "{{ venv_python }}"
@@ -472,13 +473,9 @@
 
     - name: Install VeraCrypt
       ansible.builtin.import_tasks: tasks/veracrypt.yml
-      tags: veracrypt
 
     - name: Configure hibernate
       ansible.builtin.import_tasks: tasks/hibernate.yml
-
-    - name: Install AnyDesk
-      ansible.builtin.import_tasks: tasks/anydesk.yml
 
   handlers:
     - name: Reload sysctl config
