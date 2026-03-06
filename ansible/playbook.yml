@@ -229,9 +229,9 @@
         - "192.168.34.20  liteserver-tst"
         - "5.2.74.226     liteserver"
         - "20.229.92.206  fitlet-acc"
-        - "142.250.179.174 youtube.com"
-        - "142.251.209.238 www.youtube.com"
-        - "142.251.39.142  youtu.be"
+        - "142.251.39.142 youtube.com"
+        - "142.251.142.206 www.youtube.com"
+        - "172.217.168.206 youtu.be"
       tags: hosts
 
     - name: Remove obsolete hosts entries
@@ -246,9 +246,9 @@
         - "{{ fitpc_ip }}   pihole.local"
         - "{{ fitpc_ip }}   fitpc"
         - "192.168.17.32  fitpc-tst"
-        - "142.250.185.206 youtube.com"
-        - "142.250.185.206 www.youtube.com"
-        - "142.250.179.174 youtu.be"
+        - "142.250.179.174 youtube.com"
+        - "142.251.209.238 www.youtube.com"
+        - "142.251.39.142  youtu.be"
       tags: hosts
 
     - name: Configure Visual Studio Code
@@ -458,6 +458,9 @@
 
     - name: Configure hibernate
       ansible.builtin.import_tasks: tasks/hibernate.yml
+
+    - name: Install AnyDesk
+      ansible.builtin.import_tasks: tasks/anydesk.yml
 
   handlers:
     - name: Reload sysctl config

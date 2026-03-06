@@ -1,5 +1,4 @@
 ---
-
 - name: Configure SSH
   tags: ssh
   vars:
@@ -97,7 +96,7 @@
               IdentityFile ~/.ssh/fitlet
           Host fitpc
               IdentityFile ~/.ssh/fitpc
-          Host fitpc-tailscale
+          Host sydneystraat.duckdns.org
               IdentityFile ~/.ssh/fitpc
           Host liteserver
               IdentityFile ~/.ssh/liteserver
