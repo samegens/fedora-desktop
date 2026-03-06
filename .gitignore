@@ -14,3 +14,6 @@ ansible/files/terraform/secret-vars.tfvars.encrypted
 
 # Python files
 __pycache__
+
+# Claude local config
+**/.claude/settings.local.json
