@@ -38,3 +38,19 @@
         value: true
       become: true
       become_user: "{{ username }}"
+
+    - name: Set default branch name to main
+      community.general.git_config:
+        name: init.defaultBranch
+        scope: global
+        value: main
+      become: true
+      become_user: "{{ username }}"
+
+    - name: Push to remote branch with the same name
+      community.general.git_config:
+        name: push.default
+        scope: global
+        value: current
+      become: true
+      become_user: "{{ username }}"
