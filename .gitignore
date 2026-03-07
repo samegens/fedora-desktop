@@ -8,6 +8,7 @@ ansible/host_vars/*/vault.yml
 ansible/files/*/ssh/*
 !ansible/files/*/ssh/*.pub
 ansible/files/terraform/secret-vars.tfvars.encrypted
+ansible/files/blauwe-lucht-rpa/blauwe-lucht-rpa-f89be6fb53f3.json
 
 # Vim swap files
 *.swp

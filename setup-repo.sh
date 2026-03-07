@@ -58,5 +58,8 @@ done
 create_symlink "$SECRETS_DIR/ansible/files/terraform/secret-vars.tfvars.encrypted" \
                "$REPO_DIR/ansible/files/terraform/secret-vars.tfvars.encrypted"
 
+create_symlink "$SECRETS_DIR/ansible/files/blauwe-lucht-rpa/blauwe-lucht-rpa-f89be6fb53f3.json" \
+               "$REPO_DIR/ansible/files/blauwe-lucht-rpa/blauwe-lucht-rpa-f89be6fb53f3.json"
+
 echo ""
 echo "Repository setup complete!"
