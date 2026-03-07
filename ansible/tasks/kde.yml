@@ -81,3 +81,29 @@
         value: thumbnail_grid
         ignore_spaces: true
         create: false
+
+    - name: Configure KDE power management
+      ansible.builtin.copy:
+        dest: "/home/{{ username }}/.config/powerdevilrc"
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: '0644'
+        content: |
+          [AC][Display]
+          DimDisplay=false
+          DimDisplayIdleTimeoutSec=-1
+          DimDisplayWhenIdle=false
+          TurnOffDisplayIdleTimeoutSec=900
+
+          [AC][SuspendAndShutdown]
+          AutoSuspendAction=0
+          InhibitLidActionWhenExternalMonitorPresent=false
+          PowerButtonAction=1
+
+          [Battery][SuspendAndShutdown]
+          InhibitLidActionWhenExternalMonitorPresent=false
+          PowerButtonAction=1
+
+          [LowBattery][SuspendAndShutdown]
+          InhibitLidActionWhenExternalMonitorPresent=false
+          PowerButtonAction=1
