@@ -474,6 +474,10 @@
     - name: Install VeraCrypt
       ansible.builtin.import_tasks: tasks/veracrypt.yml
 
+    - name: Configure GRUB kernel arguments
+      ansible.builtin.import_tasks: tasks/grub.yml
+      tags: grub
+
     - name: Configure hibernate
       ansible.builtin.import_tasks: tasks/hibernate.yml
 
