@@ -2,7 +2,14 @@
 - name: Install and configure Claude Code
   tags: claude
   block:
-    - name: Install Claude Code CLI
+    - name: Remove Claude Code npm package
       community.general.npm:
         name: "@anthropic-ai/claude-code"
         global: true
+        state: absent
+
+    - name: Install Claude Code via official installer
+      ansible.builtin.shell:
+        cmd: curl -fsSL https://claude.ai/install.sh | bash
+        creates: /home/{{ username }}/.local/bin/claude
+      become: false
