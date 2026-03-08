@@ -8,8 +8,22 @@
         global: true
         state: absent
 
-    - name: Install Claude Code via official installer
-      ansible.builtin.shell:
-        cmd: curl -fsSL https://claude.ai/install.sh | bash
-        creates: /home/{{ username }}/.local/bin/claude
+    - name: Check if Claude Code is already installed
+      ansible.builtin.stat:
+        path: /home/{{ username }}/.local/bin/claude
+      register: claude_stat
+
+    - name: Download Claude Code installer
+      ansible.builtin.get_url:
+        url: https://claude.ai/install.sh
+        dest: /tmp/claude-install.sh
+        mode: "0755"
       become: false
+      when: not claude_stat.stat.exists
+
+    - name: Install Claude Code via official installer
+      ansible.builtin.command:
+        cmd: bash /tmp/claude-install.sh
+      become: false
+      when: not claude_stat.stat.exists
+      changed_when: true
