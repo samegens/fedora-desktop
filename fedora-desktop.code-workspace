@@ -24,7 +24,11 @@
 			"ansible.cfg": "ini"
 		},
 		"ansible.python.interpreterPath": "/home/sebastiaan/python3-venv/ansible-latest/bin/python",
-		"ansible.python.activationScript": "/home/sebastiaan/python3-venv/ansible-latest/bin/activate"
+		"ansible.python.activationScript": "/home/sebastiaan/python3-venv/ansible-latest/bin/activate",
+		"terminal.integrated.env.linux": {
+			"VIRTUAL_ENV": "/home/sebastiaan/python3-venv/ansible-latest",
+			"PATH": "/home/sebastiaan/python3-venv/ansible-latest/bin:${env:PATH}"
+		}
 	},
 	"extensions": {
 		"recommendations": [
