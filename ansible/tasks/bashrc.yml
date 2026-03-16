@@ -45,3 +45,4 @@
         - alias ssh-fitpc='ssh -t sam@sydneystraat.duckdns.org -p 27372 byobu'
         - alias ssh-cubi='ssh -t sam@cubi byobu'
         - alias ssh-liteserver='ssh -t '
+        - alias activate-ansible='. ~/python3-venv/ansible-latest/bin/activate && ansible --version'
