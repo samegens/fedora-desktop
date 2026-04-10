@@ -73,6 +73,7 @@ dnf_packages:
   - openssh-server    # to use sshfs with this machine
   - nfs-utils         # to be able to mount NFS shares
   - vlc
+  - inkscape
 
 flatpaks:
   - md.obsidian.Obsidian
