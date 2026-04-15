@@ -59,6 +59,17 @@
         enabled: true
         state: started
 
+    - name: Trust k3s pod and service networks in firewalld
+      ansible.posix.firewalld:
+        zone: trusted
+        source: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: enabled
+      loop:
+        - 10.42.0.0/16
+        - 10.43.0.0/16
+
     - name: Fix kubeconfig permissions
       ansible.builtin.file:
         path: /etc/rancher/k3s/k3s.yaml
