@@ -481,6 +481,12 @@
     - name: Configure hibernate
       ansible.builtin.import_tasks: tasks/hibernate.yml
 
+    - name: Configure SELinux policies
+      ansible.builtin.import_tasks: tasks/selinux.yml
+
+    - name: Install Google Fonts
+      ansible.builtin.import_tasks: tasks/google-fonts.yml
+
   handlers:
     - name: Reload sysctl config
       ansible.builtin.command:

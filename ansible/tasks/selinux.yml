@@ -1,0 +1,46 @@
+---
+- name: Configure SELinux policies
+  tags: selinux
+  block:
+    - name: Copy iptables-restor SELinux policy
+      ansible.builtin.copy:
+        dest: /etc/selinux/targeted/iptables-restor-config-home.te
+        content: |
+          # Bump the version (timestamp) when changing this policy, otherwise the updated policy won't be installed.
+          module iptables-restor-config-home 2026.04.14;
+
+          require {
+              type iptables_t;
+              type config_home_t;
+              class file append;
+          }
+
+          # Allow iptables-restore to append to log files in ~/.config
+          allow iptables_t config_home_t:file append;
+        mode: "0644"
+      register: te_result
+
+    - name: Check if SELinux policy module is already installed
+      ansible.builtin.command:
+        cmd: semodule --list-modules=full
+      register: semodule_list_result
+      changed_when: false
+
+    - name: Compile SELinux policy module
+      ansible.builtin.command:
+        cmd: checkmodule -M -m -o /etc/selinux/targeted/iptables-restor-config-home.mod /etc/selinux/targeted/iptables-restor-config-home.te
+      when: te_result.changed or 'iptables-restor-config-home' not in semodule_list_result.stdout
+      changed_when: true
+
+    - name: Package SELinux policy module
+      ansible.builtin.command:
+        cmd: semodule_package -o /etc/selinux/targeted/iptables-restor-config-home.pp -m /etc/selinux/targeted/iptables-restor-config-home.mod
+      when: te_result.changed or 'iptables-restor-config-home' not in semodule_list_result.stdout
+      changed_when: true
+
+    - name: Install SELinux policy module
+      ansible.builtin.command:
+        cmd: semodule -i /etc/selinux/targeted/iptables-restor-config-home.pp
+      when: te_result.changed or 'iptables-restor-config-home' not in semodule_list_result.stdout
+      changed_when: true
+

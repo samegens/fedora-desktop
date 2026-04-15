@@ -1,0 +1,42 @@
+---
+- name: Install Google Fonts
+  tags: google-fonts
+  block:
+    - name: Create Google Fonts directory
+      ansible.builtin.file:
+        path: /usr/share/fonts/google-fonts
+        state: directory
+        mode: "0755"
+
+    - name: Check if Google Fonts are already installed
+      ansible.builtin.stat:
+        path: "{{ item.sentinel }}"
+      register: font_stat_result
+      loop:
+        - name: Great Vibes
+          zip: Great_Vibes.zip
+          sentinel: /usr/share/fonts/google-fonts/Great_Vibes/GreatVibes-Regular.ttf
+        - name: Playfair Display
+          zip: Playfair_Display.zip
+          sentinel: /usr/share/fonts/google-fonts/Playfair_Display/static/PlayfairDisplay-Regular.ttf
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Extract missing Google Fonts
+      ansible.builtin.unarchive:
+        src: "files/{{ item.item.zip }}"
+        dest: /usr/share/fonts/google-fonts
+        exclude:
+          - "*/OFL.txt"
+          - "*/README.txt"
+      when: not item.stat.exists
+      loop: "{{ font_stat_result.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      register: fonts_extracted_result
+
+    - name: Rebuild font cache
+      ansible.builtin.command:
+        cmd: fc-cache -f /usr/share/fonts/google-fonts
+      when: fonts_extracted_result.changed
+      changed_when: true
