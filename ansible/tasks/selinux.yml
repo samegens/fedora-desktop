@@ -43,4 +43,3 @@
         cmd: semodule -i /etc/selinux/targeted/iptables-restor-config-home.pp
       when: te_result.changed or 'iptables-restor-config-home' not in semodule_list_result.stdout
       changed_when: true
-
