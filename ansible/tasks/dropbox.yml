@@ -1,0 +1,37 @@
+---
+- name: Install Dropbox
+  community.general.flatpak:
+    name: com.dropbox.Client
+    remote: flathub
+    state: present
+
+- name: Make sure Dropbox starts at login (autostart not working on non-Ubuntu with Flatpak)
+  ansible.builtin.copy:
+    dest: /home/{{ username }}/.config/autostart/com.dropbox.Client.desktop
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: "0644"
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name=Dropbox
+      Exec=flatpak run com.dropbox.Client
+      Icon=com.dropbox.Client
+      StartupNotify=false
+      X-KDE-autostart-enabled=true
+
+- name: Make sure Dropbox can monitor all files and node works properly (1)
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    regexp: "^fs\\.inotify\\.max_user_watches="
+    line: fs.inotify.max_user_watches=524288
+    state: present
+  notify: Reload sysctl config
+
+- name: Make sure Dropbox can monitor all files and node works properly (2)
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    regexp: "^fs\\.inotify\\.max_user_instances="
+    line: fs.inotify.max_user_instances=512
+    state: present
+  notify: Reload sysctl config

@@ -156,23 +156,9 @@
       ansible.builtin.import_tasks: tasks/workrave.yml
       tags: workrave
 
-    - name: Make sure Dropbox can monitor all files and node works properly (1)
-      ansible.builtin.lineinfile:
-        path: /etc/sysctl.conf
-        regexp: "^fs\\.inotify\\.max_user_watches="
-        line: fs.inotify.max_user_watches=524288
-        state: present
-      notify: Reload sysctl config
-      tags: sysctl
-
-    - name: Make sure Dropbox can monitor all files and node works properly (2)
-      ansible.builtin.lineinfile:
-        path: /etc/sysctl.conf
-        regexp: "^fs\\.inotify\\.max_user_instances="
-        line: fs.inotify.max_user_instances=512
-        state: present
-      notify: Reload sysctl config
-      tags: sysctl
+    - name: Configure Dropbox
+      ansible.builtin.import_tasks: tasks/dropbox.yml
+      tags: dropbox
 
     - name: Add Oracle VirtualBox repository
       ansible.builtin.get_url:

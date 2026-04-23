@@ -81,7 +81,6 @@ flatpaks:
   - com.spotify.Client
   - org.darktable.Darktable
   - org.signal.Signal
-  - com.dropbox.Client
   - org.freecad.FreeCAD
   - com.prusa3d.PrusaSlicer
   - eu.betterbird.Betterbird
