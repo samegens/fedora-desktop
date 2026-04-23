@@ -44,5 +44,7 @@
         - 'ds() { if [ -z "$1" ]; then echo "Usage: ds <docker-image>"; return 1; fi; docker run --rm -it -v "$(pwd):/data" "$1" /bin/bash; }'
         - alias ssh-fitpc='ssh -t sam@sydneystraat.duckdns.org -p 27372 byobu'
         - alias ssh-cubi='ssh -t sam@cubi byobu'
+        - alias ssh-thuis='ssh -t thuis byobu'
+        - alias emby-thuis='ssh -fN thuis && xdg-open http://localhost:8096'
         - alias ssh-liteserver='ssh -t '
         - alias activate-ansible='. ~/python3-venv/ansible-latest/bin/activate && ansible --version'

@@ -133,6 +133,14 @@
               User git
               IdentityFile ~/.ssh/github_adopteerregenwoud
 
+          Host thuis
+              HostName thuis.blauwe-lucht.nl
+              User sam
+              IdentityFile ~/.ssh/homeserver
+              Port 27372
+              LocalForward 8096 localhost:8096
+              ServerAliveInterval 60
+
           # Entry for new machine that needs to be configured using the Ubuntu desktop Ansible configuration.
           Host new-machine
               HostName 192.168.88.181
