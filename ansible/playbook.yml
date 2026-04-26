@@ -464,6 +464,10 @@
       ansible.builtin.import_tasks: tasks/grub.yml
       tags: grub
 
+    - name: Install NVIDIA driver
+      ansible.builtin.import_tasks: tasks/nvidia.yml
+      tags: nvidia
+
     - name: Configure hibernate
       ansible.builtin.import_tasks: tasks/hibernate.yml
 
