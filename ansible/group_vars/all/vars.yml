@@ -74,6 +74,7 @@ dnf_packages:
   - nfs-utils         # to be able to mount NFS shares
   - vlc
   - inkscape
+  - iperf
 
 flatpaks:
   - md.obsidian.Obsidian

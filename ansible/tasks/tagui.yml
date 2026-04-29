@@ -2,50 +2,87 @@
 - name: Install TagUI
   tags: tagui
   block:
-      - name: Download TagUI
-        ansible.builtin.get_url:
-            url: https://github.com/kelaberetiv/TagUI/releases/download/v6.110.0/TagUI_Linux.zip
-            dest: /root/
-            owner: root
-            group: root
-            mode: "0644"
+    - name: Add Google Chrome repository
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/google-chrome.repo
+        mode: "0644"
+        content: |
+          [google-chrome]
+          name=google-chrome
+          baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://dl.google.com/linux/linux_signing_key.pub
 
-      - name: Unzip TagUI download
-        ansible.builtin.unarchive:
-            src: /root/TagUI_Linux.zip
-            remote_src: true
-            dest: /home/{{ username }}/
-            mode: "0755"
-            owner: "{{ username }}"
-            group: "{{ username }}"
-            creates: /home/{{ username }}/tagui
+    - name: Install Google Chrome
+      ansible.builtin.dnf:
+        name: google-chrome-stable
+        state: present
 
-      - name: Create link to tagui executable
-        ansible.builtin.file:
-            src: /home/{{ username }}/tagui/src/tagui
-            dest: /usr/local/bin/tagui
-            mode: "0755"
-            state: link
+    - name: Create Chrome directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0700"
+      loop:
+        - /home/{{ username }}/google-chrome
+        - /home/{{ username }}/google-chrome/Default
 
-      - name: Install PHP (required by TagUI)
-        ansible.builtin.dnf:
-            name: php
+    - name: Copy Chrome bookmarks
+      ansible.builtin.copy:
+        src: ~/.config/google-chrome/Default/Bookmarks
+        dest: /home/{{ username }}/.config/google-chrome/Default/Bookmarks
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0600"
+      when: copy_chrome_bookmarks is defined and copy_chrome_bookmarks
 
-      - name: Install Python package rpa
-        ansible.builtin.pip:
-            name: rpa
+    - name: Download TagUI
+      ansible.builtin.get_url:
+        url: https://github.com/kelaberetiv/TagUI/releases/download/v6.110.0/TagUI_Linux.zip
+        dest: /root/
+        owner: root
+        group: root
+        mode: "0644"
 
-      - name: Install packages required by blauwe-lucht-rpa
-        ansible.builtin.pip:
-            name:
-                - gspread
-                - oauth2client
+    - name: Unzip TagUI download
+      ansible.builtin.unarchive:
+        src: /root/TagUI_Linux.zip
+        remote_src: true
+        dest: /home/{{ username }}/
+        mode: "0755"
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        creates: /home/{{ username }}/tagui
 
-      - name: Install blauwe-lucht-rpa Google service account key
-        ansible.builtin.copy:
-            src: blauwe-lucht-rpa/blauwe-lucht-rpa-f89be6fb53f3.json
-            dest: /home/{{ username }}/blauwe-lucht-rpa-f89be6fb53f3.json
-            owner: "{{ username }}"
-            group: "{{ username }}"
-            mode: "0600"
-        no_log: true
+    - name: Create link to tagui executable
+      ansible.builtin.file:
+        src: /home/{{ username }}/tagui/src/tagui
+        dest: /usr/local/bin/tagui
+        mode: "0755"
+        state: link
+
+    - name: Install PHP (required by TagUI)
+      ansible.builtin.dnf:
+        name: php
+
+    - name: Install Python package rpa
+      ansible.builtin.pip:
+        name: rpa
+
+    - name: Install packages required by blauwe-lucht-rpa
+      ansible.builtin.pip:
+        name:
+          - gspread
+          - oauth2client
+
+    - name: Install blauwe-lucht-rpa Google service account key
+      ansible.builtin.copy:
+        src: blauwe-lucht-rpa/blauwe-lucht-rpa-f89be6fb53f3.json
+        dest: /home/{{ username }}/blauwe-lucht-rpa-f89be6fb53f3.json
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0600"
+      no_log: true

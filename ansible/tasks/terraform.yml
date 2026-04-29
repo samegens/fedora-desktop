@@ -1,0 +1,25 @@
+---
+- name: Install Terraform
+  tags: terraform
+  block:
+    - name: Install terraform
+      ansible.builtin.unarchive:
+        src: "{{ terraform_pkg_url }}"
+        dest: "{{ terraform_install_path }}"
+        remote_src: true
+
+    - name: Create ~/.terraform
+      ansible.builtin.file:
+        path: /home/{{ username }}/.terraform
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0700"
+        state: directory
+
+    - name: Copy Terraform Azure config
+      ansible.builtin.copy:
+        src: terraform/secret-vars.tfvars.encrypted
+        dest: /home/{{ username }}/.terraform/secret-vars.tfvars
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: "0600"

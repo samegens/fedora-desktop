@@ -156,42 +156,8 @@
     - name: Configure Dropbox
       ansible.builtin.import_tasks: tasks/dropbox.yml
 
-    - name: Add Oracle VirtualBox repository
-      ansible.builtin.get_url:
-        url: https://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo
-        dest: /etc/yum.repos.d/virtualbox.repo
-        mode: "0644"
-      tags: virtualbox
-
     - name: Install VirtualBox
-      ansible.builtin.dnf:
-        name:
-          - VirtualBox-7.1
-          - kernel-devel
-          - kernel-headers
-        state: present
-      tags: virtualbox
-
-    - name: Add user to vboxusers group
-      ansible.builtin.user:
-        name: "{{ username }}"
-        groups: vboxusers
-        append: true
-      tags: virtualbox
-
-    - name: Create /etc/vbox directory
-      ansible.builtin.file:
-        path: /etc/vbox
-        state: directory
-        mode: "0755"
-      tags: virtualbox
-
-    - name: Extend VirtualBox static IP range
-      ansible.builtin.copy:
-        dest: /etc/vbox/networks.conf
-        content: "* 192.168.0.0/16"
-        mode: "0644"
-      tags: virtualbox
+      ansible.builtin.import_tasks: tasks/virtualbox.yml
 
     - name: Install Vagrant
       ansible.builtin.import_tasks: tasks/vagrant.yml
@@ -289,51 +255,6 @@
     - name: Configure .bashrc
       ansible.builtin.import_tasks: tasks/bashrc.yml
 
-    - name: Add Google Chrome repository
-      ansible.builtin.copy:
-        dest: /etc/yum.repos.d/google-chrome.repo
-        mode: "0644"
-        content: |
-          [google-chrome]
-          name=google-chrome
-          baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
-          enabled=1
-          gpgcheck=1
-          gpgkey=https://dl.google.com/linux/linux_signing_key.pub
-      tags:
-        - chrome
-        - tagui
-
-    - name: Install Chrome (needed for TagUI)
-      ansible.builtin.dnf:
-        name: google-chrome-stable
-        state: present
-      tags:
-        - chrome
-        - tagui
-
-    - name: Create Chrome directories
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        owner: "{{ username }}"
-        group: "{{ username }}"
-        mode: "0700"
-      loop:
-        - /home/{{ username }}/google-chrome
-        - /home/{{ username }}/google-chrome/Default
-      tags: chrome
-
-    - name: Copy Chrome bookmarks
-      ansible.builtin.copy:
-        src: ~/.config/google-chrome/Default/Bookmarks
-        dest: /home/{{ username }}/.config/google-chrome/Default/Bookmarks
-        owner: "{{ username }}"
-        group: "{{ username }}"
-        mode: "0600"
-      when: copy_chrome_bookmarks is defined and copy_chrome_bookmarks
-      tags: chrome
-
     - name: Configure Firefox
       ansible.builtin.import_tasks: tasks/firefox.yml
 
@@ -354,38 +275,11 @@
         append: true
       tags: dialout
 
-    - name: Install terraform
-      ansible.builtin.unarchive:
-        src: "{{ terraform_pkg_url }}"
-        dest: "{{ terraform_install_path }}"
-        remote_src: true
-      tags: terraform
-
-    - name: Create ~/.terraform
-      ansible.builtin.file:
-        path: /home/{{ username }}/.terraform
-        owner: "{{ username }}"
-        group: "{{ username }}"
-        mode: "0700"
-        state: directory
-      tags: terraform
-
-    - name: Copy Terraform Azure config
-      ansible.builtin.copy:
-        src: terraform/secret-vars.tfvars.encrypted
-        dest: /home/{{ username }}/.terraform/secret-vars.tfvars
-        owner: "{{ username }}"
-        group: "{{ username }}"
-        mode: "0600"
-      tags: terraform
+    - name: Install Terraform
+      ansible.builtin.import_tasks: tasks/terraform.yml
 
     - name: Install P4Merge
       ansible.builtin.import_tasks: tasks/p4merge.yml
-
-    - name: Install iperf
-      ansible.builtin.dnf:
-        name: iperf
-      tags: iperf
 
     - name: Install V
       ansible.builtin.import_tasks: tasks/v.yml

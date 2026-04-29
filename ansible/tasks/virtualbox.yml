@@ -1,0 +1,35 @@
+---
+- name: Install VirtualBox
+  tags: virtualbox
+  block:
+    - name: Add Oracle VirtualBox repository
+      ansible.builtin.get_url:
+        url: https://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo
+        dest: /etc/yum.repos.d/virtualbox.repo
+        mode: "0644"
+
+    - name: Install VirtualBox
+      ansible.builtin.dnf:
+        name:
+          - VirtualBox-7.1
+          - kernel-devel
+          - kernel-headers
+        state: present
+
+    - name: Add user to vboxusers group
+      ansible.builtin.user:
+        name: "{{ username }}"
+        groups: vboxusers
+        append: true
+
+    - name: Create /etc/vbox directory
+      ansible.builtin.file:
+        path: /etc/vbox
+        state: directory
+        mode: "0755"
+
+    - name: Extend VirtualBox static IP range
+      ansible.builtin.copy:
+        dest: /etc/vbox/networks.conf
+        content: "* 192.168.0.0/16"
+        mode: "0644"
