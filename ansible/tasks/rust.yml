@@ -1,5 +1,6 @@
 ---
 - name: Install Rust and Cargo
+  tags: rust
   block:
     - name: Check if rustup is already installed
       ansible.builtin.stat:
@@ -10,7 +11,7 @@
       ansible.builtin.get_url:
         url: https://sh.rustup.rs
         dest: /tmp/rustup-init.sh
-        mode: '0755'
+        mode: "0755"
       when: not rustup_stat.stat.exists
 
     - name: Install rustup
@@ -27,7 +28,8 @@
       become: true
       become_user: "{{ username }}"
       register: rustup_update
-      changed_when: "'updated' in rustup_update.stdout or 'installed' in rustup_update.stdout"
+      changed_when: "'updated' in rustup_update.stdout or 'installed' in
+        rustup_update.stdout"
       when: rustup_stat.stat.exists
 
     - name: Clean up rustup installer
