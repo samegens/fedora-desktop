@@ -2,7 +2,6 @@
 - name: Configure Fedora desktop
   hosts: all
   vars:
-    install_v: false
     use_gnome: false
     use_kde: true
     venv_python: /home/{{ username }}/python3-venv/ansible-latest/bin/python3
@@ -280,9 +279,6 @@
 
     - name: Install P4Merge
       ansible.builtin.import_tasks: tasks/p4merge.yml
-
-    - name: Install V
-      ansible.builtin.import_tasks: tasks/v.yml
 
     - name: Install Brother DCP-1610W printer
       ansible.builtin.import_tasks: tasks/printer.yml
