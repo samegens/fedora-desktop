@@ -1,0 +1,21 @@
+---
+- name: Enable RPMFusion non-free repository
+  ansible.builtin.dnf:
+    name: "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{{
+      ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+    disable_gpg_check: true
+
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: rpm
+
+- name: Swap ffmpeg-free for full ffmpeg to fix Floatplane video scrubbing in Firefox
+  ansible.builtin.command: dnf swap -y ffmpeg-free ffmpeg --allowerasing
+  when: "'ffmpeg-free' in ansible_facts.packages"
+  changed_when: true
+
+- name: Install libavcodec-freeworld
+  ansible.builtin.dnf:
+    name: libavcodec-freeworld
+    state: present

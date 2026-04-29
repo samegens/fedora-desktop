@@ -348,6 +348,10 @@
       when: copy_chrome_bookmarks is defined and copy_chrome_bookmarks
       tags: chrome
 
+    - name: Configure Firefox
+      ansible.builtin.import_tasks: tasks/firefox.yml
+      tags: firefox
+
     - name: Install TagUI
       ansible.builtin.import_tasks:
         file: tasks/tagui.yml
