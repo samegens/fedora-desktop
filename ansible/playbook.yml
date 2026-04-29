@@ -146,19 +146,15 @@
 
     - name: Configure Obsidian
       ansible.builtin.import_tasks: tasks/obsidian.yml
-      tags: obsidian
 
     - name: Configure Darktable
       ansible.builtin.import_tasks: tasks/darktable.yml
-      tags: darktable
 
     - name: Install Workrave
       ansible.builtin.import_tasks: tasks/workrave.yml
-      tags: workrave
 
     - name: Configure Dropbox
       ansible.builtin.import_tasks: tasks/dropbox.yml
-      tags: dropbox
 
     - name: Add Oracle VirtualBox repository
       ansible.builtin.get_url:
@@ -198,24 +194,19 @@
       tags: virtualbox
 
     - name: Install Vagrant
-      ansible.builtin.include_tasks: tasks/vagrant.yml
-      tags: vagrant
+      ansible.builtin.import_tasks: tasks/vagrant.yml
 
     - name: Install InSpec
-      ansible.builtin.import_tasks:
-        file: tasks/inspec.yml
+      ansible.builtin.import_tasks: tasks/inspec.yml
 
     - name: Configure SSH
-      ansible.builtin.import_tasks:
-        file: tasks/ssh.yml
+      ansible.builtin.import_tasks: tasks/ssh.yml
 
     - name: Configure SSHFS mounts
-      ansible.builtin.import_tasks:
-        file: tasks/sshfs-mounts.yml
+      ansible.builtin.import_tasks: tasks/sshfs-mounts.yml
 
     - name: Configure NFS mounts
-      ansible.builtin.import_tasks:
-        file: tasks/nfs-mounts.yml
+      ansible.builtin.import_tasks: tasks/nfs-mounts.yml
 
     - name: Set hosts entries
       ansible.builtin.lineinfile:
@@ -257,12 +248,10 @@
       tags: hosts
 
     - name: Configure Visual Studio Code
-      ansible.builtin.include_tasks: tasks/vscode.yml
-      tags: vscode
+      ansible.builtin.import_tasks: tasks/vscode.yml
 
     - name: Configure Python virtual env
-      ansible.builtin.include_tasks: tasks/python-venv.yml
-      tags: python-venv
+      ansible.builtin.import_tasks: tasks/python-venv.yml
 
     - name: Change keymap to make ScrLk the compose key instead of Pause
       ansible.builtin.copy:
@@ -278,12 +267,10 @@
       tags: xmodmap
 
     - name: Configure Gnome
-      ansible.builtin.import_tasks:
-        file: tasks/gnome.yml
+      ansible.builtin.import_tasks: tasks/gnome.yml
 
     - name: Configure KDE Plasma
-      ansible.builtin.import_tasks:
-        file: tasks/kde.yml
+      ansible.builtin.import_tasks: tasks/kde.yml
 
     - name: Create .inputrc
       ansible.builtin.copy:
@@ -300,8 +287,7 @@
       tags: rc
 
     - name: Configure .bashrc
-      ansible.builtin.import_tasks:
-        file: tasks/bashrc.yml
+      ansible.builtin.import_tasks: tasks/bashrc.yml
 
     - name: Add Google Chrome repository
       ansible.builtin.copy:
@@ -350,11 +336,9 @@
 
     - name: Configure Firefox
       ansible.builtin.import_tasks: tasks/firefox.yml
-      tags: firefox
 
     - name: Install TagUI
-      ansible.builtin.import_tasks:
-        file: tasks/tagui.yml
+      ansible.builtin.import_tasks: tasks/tagui.yml
 
     - name: Allow access to webcams
       ansible.builtin.user:
@@ -396,8 +380,7 @@
       tags: terraform
 
     - name: Install P4Merge
-      ansible.builtin.include_tasks: tasks/p4merge.yml
-      tags: p4merge
+      ansible.builtin.import_tasks: tasks/p4merge.yml
 
     - name: Install iperf
       ansible.builtin.dnf:
@@ -405,24 +388,19 @@
       tags: iperf
 
     - name: Install V
-      ansible.builtin.import_tasks:
-        file: tasks/v.yml
+      ansible.builtin.import_tasks: tasks/v.yml
 
     - name: Install Brother DCP-1610W printer
-      ansible.builtin.import_tasks:
-        file: tasks/printer.yml
+      ansible.builtin.import_tasks: tasks/printer.yml
 
     - name: Install Double Commander
       ansible.builtin.import_tasks: tasks/doublecmd.yml
-      tags: doublecmd
 
     - name: Install Node.js
-      ansible.builtin.import_tasks:
-        file: tasks/nodejs.yml
+      ansible.builtin.import_tasks: tasks/nodejs.yml
 
     - name: Install Microsoft TTFs
-      ansible.builtin.import_tasks:
-        file: tasks/ttf-mscorefonts.yml
+      ansible.builtin.import_tasks: tasks/ttf-mscorefonts.yml
 
     - name: Increase max virtual memory areas for OpenSearch
       ansible.posix.sysctl:
@@ -459,18 +437,15 @@
 
     - name: Install balenaEtcher
       ansible.builtin.import_tasks: tasks/balena-etcher.yml
-      tags: balena-etcher
 
     - name: Install VeraCrypt
       ansible.builtin.import_tasks: tasks/veracrypt.yml
 
     - name: Configure GRUB kernel arguments
       ansible.builtin.import_tasks: tasks/grub.yml
-      tags: grub
 
     - name: Install NVIDIA driver
       ansible.builtin.import_tasks: tasks/nvidia.yml
-      tags: nvidia
 
     - name: Configure hibernate
       ansible.builtin.import_tasks: tasks/hibernate.yml
