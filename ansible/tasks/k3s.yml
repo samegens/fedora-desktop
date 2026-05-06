@@ -10,24 +10,18 @@
     - name: Download k3s install script
       ansible.builtin.get_url:
         url: https://get.k3s.io
-        dest: /tmp/k3s-install.sh
+        dest: /root/k3s-install.sh
         mode: "0755"
       when: not k3s_stat_result.stat.exists
 
     - name: Install k3s
       ansible.builtin.command:
-        cmd: /tmp/k3s-install.sh
+        cmd: /root/k3s-install.sh
       environment:
         INSTALL_K3S_SKIP_START: "false"
         INSTALL_K3S_EXEC: server --write-kubeconfig-mode=0644
       when: not k3s_stat_result.stat.exists
       changed_when: true
-
-    - name: Clean up k3s installer
-      ansible.builtin.file:
-        path: /tmp/k3s-install.sh
-        state: absent
-      when: not k3s_stat_result.stat.exists
 
     - name: Create k3s systemd drop-in directory
       ansible.builtin.file:
@@ -51,7 +45,7 @@
         name: k3s
         daemon_reload: true
         state: restarted
-      when: config_result.changed  # noqa: no-handler
+      when: config_result.changed # noqa: no-handler
 
     - name: Ensure k3s service is enabled and started
       ansible.builtin.systemd:
@@ -83,35 +77,23 @@
     - name: Download Helm v4.0.4
       ansible.builtin.get_url:
         url: https://get.helm.sh/helm-v4.0.4-linux-amd64.tar.gz
-        dest: /tmp/helm-v4.0.4-linux-amd64.tar.gz
+        dest: /root/helm-v4.0.4-linux-amd64.tar.gz
         mode: "0644"
       when: not helm_stat_result.stat.exists
 
     - name: Extract Helm archive
       ansible.builtin.unarchive:
-        src: /tmp/helm-v4.0.4-linux-amd64.tar.gz
-        dest: /tmp
+        src: /root/helm-v4.0.4-linux-amd64.tar.gz
+        dest: /root
         remote_src: true
       when: not helm_stat_result.stat.exists
 
     - name: Install Helm binary
       ansible.builtin.copy:
-        src: /tmp/linux-amd64/helm
+        src: /root/linux-amd64/helm
         dest: /usr/local/bin/helm
         mode: "0755"
         remote_src: true
-      when: not helm_stat_result.stat.exists
-
-    - name: Clean up Helm archive
-      ansible.builtin.file:
-        path: /tmp/helm-v4.0.4-linux-amd64.tar.gz
-        state: absent
-      when: not helm_stat_result.stat.exists
-
-    - name: Clean up extracted Helm directory
-      ansible.builtin.file:
-        path: /tmp/linux-amd64
-        state: absent
       when: not helm_stat_result.stat.exists
 
     - name: Verify Helm installation
@@ -123,3 +105,28 @@
     - name: Display Helm version
       ansible.builtin.debug:
         var: helm_version_result.stdout
+
+    - name: Check if k9s is already installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/k9s
+      register: k9s_stat_result
+
+    - name: Download k9s
+      ansible.builtin.get_url:
+        url: "https://github.com/derailed/k9s/releases/download/v{{ k9s_version
+          }}/k9s_Linux_amd64.tar.gz"
+        dest: /root/k9s_Linux_amd64.tar.gz
+        mode: "0644"
+      when: not k9s_stat_result.stat.exists
+
+    - name: Extract k9s binary
+      ansible.builtin.unarchive:
+        src: /root/k9s_Linux_amd64.tar.gz
+        dest: /usr/local/bin
+        remote_src: true
+        mode: "0755"
+        owner: root
+        group: root
+        extra_opts:
+          - k9s
+      when: not k9s_stat_result.stat.exists
