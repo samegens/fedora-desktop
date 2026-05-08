@@ -19,39 +19,21 @@
         cmd: /root/k3s-install.sh
       environment:
         INSTALL_K3S_SKIP_START: "false"
-        INSTALL_K3S_EXEC: server --write-kubeconfig-mode=0644
+        INSTALL_K3S_EXEC: server
       when: not k3s_stat_result.stat.exists
       changed_when: true
-
-    - name: Create k3s systemd drop-in directory
-      ansible.builtin.file:
-        path: /etc/systemd/system/k3s.service.d
-        state: directory
-        mode: "0755"
-
-    # To prevent k3s.yaml to become unaccessible to the main user after each update we have to
-    # tell k3s to always write that file using mode 0644.
-    - name: Set kubeconfig permissions via systemd drop-in
-      ansible.builtin.copy:
-        dest: /etc/systemd/system/k3s.service.d/kubeconfig-mode.conf
-        content: |
-          [Service]
-          Environment="K3S_KUBECONFIG_MODE=0644"
-        mode: "0644"
-      register: config_result
-
-    - name: Reload systemd and restart k3s if drop-in changed
-      ansible.builtin.systemd:
-        name: k3s
-        daemon_reload: true
-        state: restarted
-      when: config_result.changed # noqa: no-handler
 
     - name: Ensure k3s service is enabled and started
       ansible.builtin.systemd:
         name: k3s
         enabled: true
         state: started
+
+    - name: Add user to adm group for kubeconfig access
+      ansible.builtin.user:
+        name: "{{ username }}"
+        groups: adm
+        append: true
 
     - name: Trust k3s pod and service networks in firewalld
       ansible.posix.firewalld:
@@ -63,11 +45,6 @@
       loop:
         - 10.42.0.0/16
         - 10.43.0.0/16
-
-    - name: Fix kubeconfig permissions
-      ansible.builtin.file:
-        path: /etc/rancher/k3s/k3s.yaml
-        mode: "0644"
 
     - name: Check if helm is already installed
       ansible.builtin.stat:
