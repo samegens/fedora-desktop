@@ -7,16 +7,21 @@
         dest: /etc/selinux/targeted/iptables-restor-config-home.te
         content: |
           # Bump the version (timestamp) when changing this policy, otherwise the updated policy won't be installed.
-          module iptables-restor-config-home 2026.04.14;
+          module iptables-restor-config-home 2026.05.11;
 
           require {
               type iptables_t;
               type config_home_t;
+              type ptmx_t;
               class file append;
+              class chr_file { read write };
           }
 
           # Allow iptables-restore to append to log files in ~/.config
           allow iptables_t config_home_t:file append;
+
+          # Allow iptables-restore to access /dev/ptmx
+          allow iptables_t ptmx_t:chr_file { read write };
         mode: "0644"
       register: te_result
 
