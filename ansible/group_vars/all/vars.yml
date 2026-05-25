@@ -83,6 +83,7 @@ dnf_packages:
   - vlc
   - inkscape
   - iperf
+  - sshpass # needed to run ansible with passwords over ssh
 
 flatpaks:
   - md.obsidian.Obsidian
