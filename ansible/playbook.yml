@@ -218,6 +218,9 @@
     - name: Configure Python virtual env
       ansible.builtin.import_tasks: tasks/python-venv.yml
 
+    - name: Install Miniconda and configure conda environments
+      ansible.builtin.import_tasks: tasks/miniconda.yml
+
     - name: Change keymap to make ScrLk the compose key instead of Pause
       ansible.builtin.copy:
         dest: /etc/xdg/autostart/xmodmap.desktop
