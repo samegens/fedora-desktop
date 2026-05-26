@@ -54,3 +54,20 @@
         virtualenv_python: python3
       become: true
       become_user: "{{ username }}"
+
+    - name: Create python venv for ansible-homedisplay
+      ansible.builtin.command:
+        cmd: python3 -m venv ~/python3-venv/ansible-homedisplay
+        creates: "~/python3-venv/ansible-homedisplay/bin/activate"
+      become: true
+      become_user: "{{ username }}"
+
+    - name: Install dependencies in ansible-homedisplay virtualenv
+      ansible.builtin.pip:
+        name:
+          - ansible<10
+          - passlib           # needed for password_hash filter
+        virtualenv: ~/python3-venv/ansible-homedisplay
+        virtualenv_python: python3
+      become: true
+      become_user: "{{ username }}"
