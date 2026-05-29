@@ -48,3 +48,4 @@
         - alias emby-thuis='ssh -fN thuis && xdg-open http://localhost:8096'
         - alias ssh-liteserver='ssh -t '
         - alias activate-ansible='. ~/python3-venv/ansible-latest/bin/activate && ansible --version'
+        - alias k='kubectl'
