@@ -99,7 +99,9 @@
           Host sydneystraat.duckdns.org
               IdentityFile ~/.ssh/fitpc
           Host liteserver
+              User sam
               IdentityFile ~/.ssh/liteserver
+              Port 27372
           Host cubi
               IdentityFile ~/.ssh/cubi
           Host homeserver
