@@ -46,6 +46,6 @@
         - alias ssh-cubi='ssh -t sam@cubi byobu'
         - alias ssh-thuis='ssh -t thuis byobu'
         - alias emby-thuis='ssh -fN thuis && xdg-open http://localhost:8096'
-        - alias ssh-liteserver='ssh -t '
+        - alias ssh-liteserver='ssh -t liteserver byobu'
         - alias activate-ansible='. ~/python3-venv/ansible-latest/bin/activate && ansible --version'
         - alias k='kubectl'
