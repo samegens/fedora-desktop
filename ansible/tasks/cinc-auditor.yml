@@ -3,6 +3,8 @@
   tags:
     - cinc-auditor
     - inspec
+  vars:
+    cinc_auditor_version: "7.1.7"
   block:
     - name: Remove InSpec if present
       ansible.builtin.dnf:
@@ -14,6 +16,20 @@
 
     - name: Install Cinc Auditor
       ansible.builtin.dnf:
-        name: https://downloads.cinc.sh/files/stable/cinc-auditor/7.1.7/el/9/cinc-auditor-7.1.7-1.el9.x86_64.rpm
+        name: "https://downloads.cinc.sh/files/stable/cinc-auditor/{{ cinc_auditor_version }}/el/9/cinc-auditor-{{ cinc_auditor_version }}-1.el9.x86_64.rpm"
         state: present
         disable_gpg_check: true
+
+    - name: Find inspec-core directory
+      ansible.builtin.find:
+        paths: /opt/cinc-auditor/embedded/lib/ruby/gems
+        patterns: "inspec-core-{{ cinc_auditor_version }}"
+        file_type: directory
+        recurse: true
+      register: inspec_core_dir_result
+
+    - name: Fix docker regex bug in deprecations.json
+      ansible.builtin.replace:
+        path: "{{ inspec_core_dir_result.files[0].path }}/etc/deprecations.json"
+        regexp: '"docker\.\+"'
+        replace: '"docker.*"'
