@@ -27,9 +27,9 @@
         version_command: vagrant --version
         expected_output_regex: "^Vagrant"
 
-      - name: inspec
-        path: /opt/inspec/bin/inspec
-        version_command: /opt/inspec/bin/inspec --version
+      - name: cinc-auditor
+        path: /opt/cinc-auditor/bin/cinc-auditor
+        version_command: /opt/cinc-auditor/bin/cinc-auditor --version
         expected_output_regex: "^[0-9]"
 
       # CLI tools

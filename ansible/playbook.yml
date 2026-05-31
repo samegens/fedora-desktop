@@ -161,8 +161,8 @@
     - name: Install Vagrant
       ansible.builtin.import_tasks: tasks/vagrant.yml
 
-    - name: Install InSpec
-      ansible.builtin.import_tasks: tasks/inspec.yml
+    - name: Install Cinc Auditor
+      ansible.builtin.import_tasks: tasks/cinc-auditor.yml
 
     - name: Configure SSH
       ansible.builtin.import_tasks: tasks/ssh.yml

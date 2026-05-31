@@ -1,0 +1,19 @@
+---
+- name: Install Cinc Auditor
+  tags:
+    - cinc-auditor
+    - inspec
+  block:
+    - name: Remove InSpec if present
+      ansible.builtin.dnf:
+        name:
+          - inspec
+          - ruby-devel
+          - libxcrypt-compat
+        state: absent
+
+    - name: Install Cinc Auditor
+      ansible.builtin.dnf:
+        name: https://downloads.cinc.sh/files/stable/cinc-auditor/7.1.7/el/9/cinc-auditor-7.1.7-1.el9.x86_64.rpm
+        state: present
+        disable_gpg_check: true
