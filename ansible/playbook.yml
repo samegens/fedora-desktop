@@ -313,6 +313,9 @@
     - name: Install Fastfetch
       ansible.builtin.import_tasks: tasks/fastfetch.yml
 
+    - name: Install Go
+      ansible.builtin.import_tasks: tasks/go.yml
+
     - name: Install Rust and Cargo
       ansible.builtin.import_tasks: tasks/rust.yml
 

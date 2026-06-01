@@ -59,6 +59,11 @@
         version_command: code --version
         expected_output_regex: "^[0-9]"
 
+      - name: go
+        path: /usr/local/go/bin/go
+        version_command: /usr/local/go/bin/go version
+        expected_output_regex: "^go version"
+
       - name: rustc
         path: /home/{{ username }}/.cargo/bin/rustc
         version_command: /home/{{ username }}/.cargo/bin/rustc --version

@@ -38,6 +38,8 @@ gitleaks_version: "8.21.2"
 trufflehog_version: "3.87.2"
 k9s_version: "0.32.7"
 
+go_version: "1.26.3"
+
 terraform_version_to_install: "1.4.0"
 terraform_pkg_url: >-
   {{ 'https://releases.hashicorp.com/terraform/' + terraform_version_to_install +
