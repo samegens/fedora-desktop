@@ -75,6 +75,14 @@ end
 
 # SSH
 
+control "ssh directory has correct permissions" do
+  describe file("/home/#{username}/.ssh") do
+    it { should be_directory }
+    its('mode') { should cmp '0700' }
+    its('owner') { should eq username }
+  end
+end
+
 control "ssh config is in place with correct permissions" do
   describe file("/home/#{username}/.ssh/config") do
     it { should exist }
@@ -85,20 +93,74 @@ control "ssh config is in place with correct permissions" do
   end
 end
 
-for key_name in ['cubi', 'fitlet', 'liteserver', 'github_samegens', 'github_blauwe-lucht', 'gitlab'] do
-  control "SSH key #{key_name} is installed with correct permissions" do
-    this_key = key_name
-    describe file("/home/#{username}/.ssh/#{this_key}") do
+ssh_keys = ['cubi', 'fitpc', 'fitlet', 'fitlet-tst', 'fitlet-acc', 'liteserver',
+            'liteserver-tst', 'github_samegens', 'github_blauwe-lucht', 'gitlab',
+            'github_adopteerregenwoud']
+
+ssh_keys.each do |key_name|
+  control "SSH private key #{key_name} is installed with correct permissions" do
+    describe file("/home/#{username}/.ssh/#{key_name}") do
       it { should exist }
       its('mode') { should cmp '0600' }
       its('owner') { should eq username }
     end
   end
+
+  control "SSH public key #{key_name}.pub is installed" do
+    describe file("/home/#{username}/.ssh/#{key_name}.pub") do
+      it { should exist }
+      its('owner') { should eq username }
+    end
+  end
 end
 
-control "homeserver SSH key symlink is in place" do
+control "homeserver SSH private key symlink is in place" do
   describe file("/home/#{username}/.ssh/homeserver") do
     it { should exist }
     it { should be_symlink }
+  end
+end
+
+control "homeserver SSH public key symlink is in place" do
+  describe file("/home/#{username}/.ssh/homeserver.pub") do
+    it { should exist }
+    it { should be_symlink }
+  end
+end
+
+# Git config
+
+control "git is configured correctly" do
+  describe file("/home/#{username}/.gitconfig") do
+    it { should exist }
+    its('content') { should match /name\s*=\s*Sebastiaan/ }
+    its('content') { should match /email\s*=\s*\S+/ }
+    its('content') { should match /fileMode\s*=\s*true/i }
+    its('content') { should match /autoSetupRemote\s*=\s*true/i }
+    its('content') { should match /defaultBranch\s*=\s*main/ }
+    its('content') { should match /default\s*=\s*current/ }
+  end
+end
+
+# Bashrc
+
+control ".bashrc is configured" do
+  describe file("/home/#{username}/.bashrc") do
+    it { should exist }
+    its('content') { should match /\.cargo\/bin/ }
+    its('content') { should match /KUBECONFIG=\/etc\/rancher\/k3s\/k3s\.yaml/ }
+    its('content') { should match /alias ll=/ }
+    its('content') { should match /alias k='kubectl'/ }
+  end
+end
+
+# Python virtual environments
+
+['ansible-latest', 'blauwe-lucht-rpa', 'ansible-homedisplay'].each do |venv|
+  control "Python venv #{venv} exists" do
+    describe file("/home/#{username}/python3-venv/#{venv}/bin/activate") do
+      it { should exist }
+      its('owner') { should eq username }
+    end
   end
 end
