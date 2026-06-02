@@ -1,0 +1,11 @@
+name: fedora-desktop
+title: Fedora Desktop Configuration Tests
+maintainer: Sebastiaan
+summary: Verifies the fedora-desktop Ansible playbook applied correctly
+version: 1.0.0
+supports:
+  - platform: fedora
+inputs:
+  - name: username
+    type: String
+    value: sebastiaan
