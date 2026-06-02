@@ -2,50 +2,22 @@ username = input('username')
 
 # Services
 
-control "docker service is enabled and running" do
-  describe service('docker') do
-    it { should be_enabled }
-    it { should be_running }
-  end
-end
-
-control "sshd service is enabled and running" do
-  describe service('sshd') do
-    it { should be_enabled }
-    it { should be_running }
-  end
-end
-
-control "k3s service is enabled and running" do
-  describe service('k3s') do
-    it { should be_enabled }
-    it { should be_running }
+['docker', 'sshd', 'k3s'].each do |svc|
+  control "#{svc} service is enabled and running" do
+    describe service(svc) do
+      it { should be_enabled }
+      it { should be_running }
+    end
   end
 end
 
 # Group memberships
 
-control "user is in docker group" do
-  describe user(username) do
-    its('groups') { should include 'docker' }
-  end
-end
-
-control "user is in video group" do
-  describe user(username) do
-    its('groups') { should include 'video' }
-  end
-end
-
-control "user is in dialout group" do
-  describe user(username) do
-    its('groups') { should include 'dialout' }
-  end
-end
-
-control "user is in adm group" do
-  describe user(username) do
-    its('groups') { should include 'adm' }
+['docker', 'video', 'dialout', 'adm'].each do |grp|
+  control "user is in #{grp} group" do
+    describe user(username) do
+      its('groups') { should include grp }
+    end
   end
 end
 
@@ -59,26 +31,11 @@ end
 
 # Hosts file
 
-control "hosts file contains liteserver entry" do
+control "hosts file contains required entries" do
   describe file('/etc/hosts') do
     its('content') { should match /5\.2\.74\.226\s+liteserver/ }
-  end
-end
-
-control "hosts file contains liteserver-tst entry" do
-  describe file('/etc/hosts') do
     its('content') { should match /liteserver-tst/ }
-  end
-end
-
-control "hosts file contains fitlet-tst entry" do
-  describe file('/etc/hosts') do
     its('content') { should match /fitlet-tst/ }
-  end
-end
-
-control "hosts file contains youtube.com block entry" do
-  describe file('/etc/hosts') do
     its('content') { should match /youtube\.com/ }
   end
 end
