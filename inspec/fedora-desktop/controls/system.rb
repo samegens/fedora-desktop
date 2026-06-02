@@ -21,6 +21,19 @@ end
   end
 end
 
+# NFS mounts
+
+control "homeserver-public NFS share is mounted and accessible" do
+  describe mount('/mnt/homeserver-public') do
+    it { should be_mounted }
+    its('device') { should eq 'cubi:/data/public' }
+    its('type') { should eq 'nfs4' }
+  end
+  describe directory('/mnt/homeserver-public') do
+    it { should be_readable }
+  end
+end
+
 # Kernel parameters
 
 control "vm.max_map_count is set to 262144 for OpenSearch" do
