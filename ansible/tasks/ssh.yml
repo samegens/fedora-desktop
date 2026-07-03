@@ -14,6 +14,7 @@
       - github_blauwe-lucht
       - gitlab
       - github_adopteerregenwoud
+      - bhosted
 
   block:
     - name: Create .ssh directory for user
@@ -106,6 +107,10 @@
               IdentityFile ~/.ssh/cubi
           Host homeserver
               IdentityFile ~/.ssh/homeserver
+          Host bhosted
+              HostName s13.servitnow.nl
+              User samegens
+              IdentityFile ~/.ssh/bhosted
 
           # GitHub Account samegens
           Host github.com

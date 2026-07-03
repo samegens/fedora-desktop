@@ -48,7 +48,7 @@ create_symlink "$SECRETS_DIR/ansible/host_vars/raaf/vault.yml" \
 create_symlink "$SECRETS_DIR/ansible/host_vars/remote/vault.yml" \
                "$REPO_DIR/ansible/host_vars/remote/vault.yml"
 
-for key in cubi fitlet fitlet-tst fitlet-acc fitpc fitpc-tst \
+for key in bhosted cubi fitlet fitlet-tst fitlet-acc fitpc fitpc-tst \
            github_adopteerregenwoud github_blauwe-lucht github_samegens \
            gitlab liteserver liteserver-tst; do
   create_symlink "$SECRETS_DIR/ansible/files/$key/ssh/$key" \
