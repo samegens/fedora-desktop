@@ -35,6 +35,16 @@ control "terraform is installed and working" do
   end
 end
 
+control "packer is installed and working" do
+  describe file('/usr/bin/packer') do
+    it { should exist }
+    it { should be_executable }
+  end
+  describe command('packer --version') do
+    its('exit_status') { should eq 0 }
+  end
+end
+
 control "vagrant is installed and working" do
   describe file('/usr/bin/vagrant') do
     it { should exist }

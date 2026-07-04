@@ -280,6 +280,9 @@
     - name: Install Terraform
       ansible.builtin.import_tasks: tasks/terraform.yml
 
+    - name: Install Packer
+      ansible.builtin.import_tasks: tasks/packer.yml
+
     - name: Install P4Merge
       ansible.builtin.import_tasks: tasks/p4merge.yml
 
