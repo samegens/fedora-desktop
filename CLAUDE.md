@@ -44,3 +44,4 @@ Three independent jobs: `ansible-lint` (config in `ansible/.ansible-lint`), `pyr
 
 - All Ansible `register:` variables must use the `_result` suffix, e.g. `k3s_stat_result`, `passlib_check_result` — never bare `k3s_stat`.
 - Tasks are tagged consistently (e.g. `dnf`, `flatpak`, `dirs`) and imported via `import_tasks`, not inlined in `playbook.yml` — new features should follow the same one-task-file-per-feature pattern.
+- **TDD**: when adding a new tool/feature, write the failing Inspec/Cinc Auditor control(s) in `inspec/fedora-desktop/controls/` first, confirm they fail (`./test-local.sh`), then write the Ansible task(s) to make them pass.
