@@ -28,7 +28,7 @@ gnome_favorites: >-
 
 starship_version: "v1.23.0"
 
-doublecmd_version: "1.1.30"
+doublecmd_version: "1.1.32"
 
 balena_etcher_version: "2.1.4"
 
